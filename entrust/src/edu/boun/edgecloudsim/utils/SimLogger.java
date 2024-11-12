@@ -175,6 +175,10 @@ public class SimLogger {
 		bw.write(line.replace(".", ","));
 		bw.newLine();
 	}
+	private void appendToFileLabel(BufferedWriter bw, String line) throws IOException {
+		bw.write(line);
+		bw.newLine();
+	}
 
 	public static void printLine(String msg) {
 		if (printLogEnabled)
@@ -252,7 +256,7 @@ public class SimLogger {
 				appendToFile(successBW, "#auto generated file!");
 //				appendToFile(failBW, "#auto generated file!");
 				
-				appendToFile(successBW, toStringLabel(true));				
+				appendToFileLabel(successBW, toStringLabel(true));				
 //				appendToFile(failBW, toStringLabel(false));	
 				
 				
@@ -446,7 +450,7 @@ public class SimLogger {
 					if (SimSettings.getInstance().getTaskLookUpTable()[i][0] == 0)
 						continue;
 
-					fileName = SimSettings.getInstance().getTaskName(i) + "_SERVICE_PERFORMANCE(GENERIC).csv";
+					fileName = "SERVICE_PERFORMANCE_("+SimSettings.getInstance().getTaskName(i) + "_GENERIC).csv";
 				}
 
 				genericFiles[i] = new File(outputFolder, filePrefix + "_" + fileName);
@@ -560,7 +564,7 @@ public class SimLogger {
 				// LOCATION LABELS
 				locationBW.write("TIME"); //FIXME replace ,
 				for (int i = 0; i < SimSettings.getInstance().getNumOfEdgeDatacenters(); i++)
-					locationBW.write(SimSettings.DELIMITER + "EDGE SERVER "+i);
+					locationBW.write(SimSettings.DELIMITER + "EDGE SERVER "+i + " (device connected)");
 
 				locationBW.newLine();
 				
@@ -699,17 +703,21 @@ public class SimLogger {
 				
 				String genericResult6 = Long.toString((endTime-startTime)/60)  + SimSettings.DELIMITER
 						+ Double.toString(_orchestratorOverhead);
-						
-				//FIXME SERVICE PERFORMANCE LABELS
-				
+									
+				appendToFile(genericBWs[i], printGenericResLabels(1));
 				appendToFile(genericBWs[i], genericResult1);
+				appendToFile(genericBWs[i], printGenericResLabels(2));
 				appendToFile(genericBWs[i], genericResult2);
+				appendToFile(genericBWs[i], printGenericResLabels(3));
 				appendToFile(genericBWs[i], genericResult3);
+				appendToFile(genericBWs[i], printGenericResLabels(4));
 				appendToFile(genericBWs[i], genericResult4);
+				appendToFile(genericBWs[i], printGenericResLabels(5));
 				appendToFile(genericBWs[i], genericResult5);
 				
 				//append performance related values only to ALL_ALLPS file
 				if(i == numOfAppTypes) {
+					appendToFile(genericBWs[i], printGenericResLabels(6));
 					appendToFile(genericBWs[i], genericResult6);
 				}
 				else {
@@ -868,6 +876,64 @@ public class SimLogger {
 		vmLoadList.clear();
 		apDelayList.clear();
 	}
+	
+	
+	private String printGenericResLabels (int i) {
+		String result = "";
+		if(i==1) {
+			result = "Overall Servie Data\n"
+					+"completedTask" + SimSettings.DELIMITER
+					+ "failedTask" + SimSettings.DELIMITER 
+					+ "uncompletedTask" + SimSettings.DELIMITER 
+					+ "failedTaskDuetoBw" + SimSettings.DELIMITER
+					+ "serviceTime" + SimSettings.DELIMITER 
+					+ "processingTime" + SimSettings.DELIMITER 
+					+ "networkDelay" + SimSettings.DELIMITER
+					+ "0" + SimSettings.DELIMITER 
+					+ "cost" + SimSettings.DELIMITER 
+					+ "failedTaskDueToVmCapacity" + SimSettings.DELIMITER 
+					+ "failedTaskDuetoMobility" + SimSettings.DELIMITER 
+					+ "QoE1" + SimSettings.DELIMITER 
+					+ "QoE2" + SimSettings.DELIMITER
+					+ "refectedTaskDuetoWlanRange"
+					+ SimSettings.DELIMITER
+					+ "failedTaskDuetoDeviceDeath";
+		}else if (i==2) {
+			result = "Performance of EdgeServer\n"
+					+ "completedTaskOnEdge" + SimSettings.DELIMITER
+					+ "failedTaskOnEdge" + SimSettings.DELIMITER
+					+ "uncompletedTaskOnEdge" + SimSettings.DELIMITER
+					+ "0" + SimSettings.DELIMITER
+					+ "serviceTimeOnEdge" + SimSettings.DELIMITER
+					+ "processingTimeOnEdge" + SimSettings.DELIMITER
+					+ "0.0" + SimSettings.DELIMITER 
+					+ "vmLoadOnEdge" + SimSettings.DELIMITER 
+					+ "failedTaskDueToVmCapacityOnEdge";
+		}else if (i==3) {
+			result = "Same but for Cloud";
+		
+		}else if (i==4) {
+
+			result = "Same but for Mobile Device";
+			
+		}else if (i==5) {
+			result = "Bw Delays \n"
+				+ "lanDelay" + SimSettings.DELIMITER
+				+ "manDelay" + SimSettings.DELIMITER
+				+ "wanDelay" + SimSettings.DELIMITER
+				+ "gsmDelay" + SimSettings.DELIMITER
+				+ "failedTaskDuetoLanBw" + SimSettings.DELIMITER
+				+ "failedTaskDuetoManBw" + SimSettings.DELIMITER
+				+ "failedTaskDuetoWanBw" + SimSettings.DELIMITER
+				+ "failedTaskDuetoGsmBw";
+		}else if (i==6)
+		
+			result = "(endTime-startTime)/60"  + SimSettings.DELIMITER
+				+ "orchestratorOverhead";
+		
+		return result;
+	}
+	
 	
 	private void recordLog(int taskId){
 		LogItem value = taskMap.remove(taskId);
