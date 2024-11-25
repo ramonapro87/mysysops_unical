@@ -64,7 +64,7 @@ public class MainAppEntrust {
 
 		//load settings from configuration file
 		SimSettings SS = SimSettings.getInstance();
-		if(SS.initialize(configFile, edgeDevicesFile, applicationsFile) == false){
+		if(SS.initialize(configFile, edgeDevicesFile, applicationsFile,true) == false){
 			SimLogger.printLine("cannot initialize simulation settings!");
 			System.exit(0);
 		}

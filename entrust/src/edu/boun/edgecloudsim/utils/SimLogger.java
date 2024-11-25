@@ -1203,14 +1203,15 @@ class LogItem {
 	
 	public void taskStarted(double time, int deviceId) {
 		taskStartTime = time;
-		
-		MobileHostEnergy host = ((MobileHostEnergy)SimManager.getInstance().getMobileServerManager().getDatacenter().getHostList().get(deviceId));        	
-		double energyLevel= host.getEnergyModel().getBatteryLevelWattHour();
-		double energyLevelperc= host.getEnergyModel().getBatteryLevelPercentage();
-		double energyMax = host.getEnergyModel().getBatteryCapacity();
-		
-		taskStartDeviceEnergy = energyLevel;
-		taskStartDeviceEnergyPerc = energyLevelperc;
+		if (SimSettings.getInstance().IS_ENERGY) {
+			MobileHostEnergy host = ((MobileHostEnergy)SimManager.getInstance().getMobileServerManager().getDatacenter().getHostList().get(deviceId));        	
+			double energyLevel= host.getEnergyModel().getBatteryLevelWattHour();
+			double energyLevelperc= host.getEnergyModel().getBatteryLevelPercentage();
+			double energyMax = host.getEnergyModel().getBatteryCapacity();
+			
+			taskStartDeviceEnergy = energyLevel;
+			taskStartDeviceEnergyPerc = energyLevelperc;			
+		}
 		status = SimLogger.TASK_STATUS.UPLOADING;
 		
 		if (time < SimSettings.getInstance().getWarmUpPeriod())
@@ -1254,29 +1255,37 @@ class LogItem {
 	}
 
 	public void taskEnded(double time) {
-//		taskEndTime = time;
-		setEndTimeAndEnergy(time, deviceId);
+		if (SimSettings.getInstance().IS_ENERGY)
+			setEndTimeAndEnergy(time, deviceId);
+		else
+			taskEndTime = time;
 		status = SimLogger.TASK_STATUS.COMLETED;
 	}
 
 	public void taskRejectedDueToVMCapacity(double time, int _vmType) {
 		vmType = _vmType;
-//		taskEndTime = time;
-		setEndTimeAndEnergy(time, deviceId);
+		if (SimSettings.getInstance().IS_ENERGY)
+			setEndTimeAndEnergy(time, deviceId);
+		else
+			taskEndTime = time;
 		status = SimLogger.TASK_STATUS.REJECTED_DUE_TO_VM_CAPACITY;
 	}
 	
 	public void taskRejectedDueToWlanCoverage(double time, int _vmType) {
 		vmType = _vmType;
-//		taskEndTime = time;
-		setEndTimeAndEnergy(time, deviceId);
+		if (SimSettings.getInstance().IS_ENERGY)
+			setEndTimeAndEnergy(time, deviceId);
+		else
+			taskEndTime = time;
 		status = SimLogger.TASK_STATUS.REJECTED_DUE_TO_WLAN_COVERAGE;
 	}
 
 	public void taskRejectedDueToBandwidth(double time, int _vmType, NETWORK_DELAY_TYPES delayType) {
 		vmType = _vmType;
-//		taskEndTime = time;
-		setEndTimeAndEnergy(time, deviceId);
+		if (SimSettings.getInstance().IS_ENERGY)
+			setEndTimeAndEnergy(time, deviceId);
+		else
+			taskEndTime = time;
 		status = SimLogger.TASK_STATUS.REJECTED_DUE_TO_BANDWIDTH;
 		
 		if(delayType == NETWORK_DELAY_TYPES.WLAN_DELAY)
@@ -1290,8 +1299,10 @@ class LogItem {
 	}
 
 	public void taskFailedDueToBandwidth(double time, NETWORK_DELAY_TYPES delayType) {
-//		taskEndTime = time;
-		setEndTimeAndEnergy(time, deviceId);
+		if (SimSettings.getInstance().IS_ENERGY)
+			setEndTimeAndEnergy(time, deviceId);
+		else
+			taskEndTime = time;
 		status = SimLogger.TASK_STATUS.UNFINISHED_DUE_TO_BANDWIDTH;
 		
 		if(delayType == NETWORK_DELAY_TYPES.WLAN_DELAY)
@@ -1306,14 +1317,18 @@ class LogItem {
 
 	//todo Ramona
 	public void taskFailedDueToDeviceDeath(double time) {
-//		taskEndTime = time;
-		setEndTimeAndEnergy(time, deviceId);
+		if (SimSettings.getInstance().IS_ENERGY)
+			setEndTimeAndEnergy(time, deviceId);
+		else
+			taskEndTime = time;
 		status = SimLogger.TASK_STATUS.FAILED_DUE_TO_DEVICE_DEATH;
 	}
 
 	public void taskFailedDueToMobility(double time) {
-//		taskEndTime = time;
-		setEndTimeAndEnergy(time, deviceId);
+		if (SimSettings.getInstance().IS_ENERGY)
+			setEndTimeAndEnergy(time, deviceId);
+		else
+			taskEndTime = time;
 		status = SimLogger.TASK_STATUS.UNFINISHED_DUE_TO_MOBILITY;
 	}
 	
@@ -1330,10 +1345,6 @@ class LogItem {
 		taskEndDeviceEnergy = energyLevel;
 		taskEndDeviceEnergyPerc = energyLevelperc;
 	}
-	
-	
-	
-	
 	
 
 	public void setCost(double _bwCost, double _cpuCos) {
