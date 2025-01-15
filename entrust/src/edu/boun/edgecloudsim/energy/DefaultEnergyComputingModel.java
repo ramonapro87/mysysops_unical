@@ -13,8 +13,9 @@ public class DefaultEnergyComputingModel extends EnergyComputingModel {
 
 	@Override
 	public void initialize() {
-		// TODO Auto-generated method stub
-
+		//FIXME not used
+		cpuEnergyConsumption = 0; //TEST purpose
+		networkEnergyConsumption = 0; //TEST purpose
 	}
 
 
@@ -25,7 +26,7 @@ public class DefaultEnergyComputingModel extends EnergyComputingModel {
 	}
 
 	@Override
-	public double getCpuEnergyConsumption() {
+	public double getCpuEnergyConsumption() {//FIXME UNUSED
 		return cpuEnergyConsumption;
 	}
 
@@ -89,7 +90,7 @@ public class DefaultEnergyComputingModel extends EnergyComputingModel {
 	}
 
 	@Override
-	public void setIntialBatteryPercentage(double batteryLevel) {
+	public void setIntialBatteryPercentage(double batteryLevel) { //FIXME unused
 			this.initialBatteryLevel = batteryLevel / 100.0;
 	}
 

@@ -32,8 +32,13 @@ public class MobileHostEnergy extends MobileHost {
         batteryLevel = SimUtils.getRandomDoubleNumber(SimSettings.getInstance().getMIN_BATT_PERC(), SimSettings.getInstance().getMAX_BATT_PERC());
 //        System.out.println("BATTERY LEVEL: "+batteryLevel);
         batteryCapacity = _batteryCapacity;
+        
+        energyModel.setBattery(SimSettings.getInstance().isBATTERY());
+        
+        energyModel.setBatteryCapacity(_batteryCapacity*batteryLevel/100);
+
         isDead = false;
-         deadlisthost = DeadHost.getInstance();
+        deadlisthost = DeadHost.getInstance();
     }
 
     /**
@@ -69,7 +74,6 @@ public class MobileHostEnergy extends MobileHost {
 
 
     public boolean isDead() {
-//        return false;
         return isDead;
     }
 
@@ -81,7 +85,7 @@ public class MobileHostEnergy extends MobileHost {
         this.energyModel = energyModel;
     }
 
-    public Double getBatteryLevel() {
+    public Double getBatteryLevel() {//FIXME unused
         return energyModel.getBatteryLevelWattHour();
     }
 
@@ -91,27 +95,22 @@ public class MobileHostEnergy extends MobileHost {
      * if the battery level is less than the energy consumed by the device, the device is considered dead
      * and the battery level is set to 0
      */
-    public Double updateBatteryLevel() {
+    public void updateBatteryLevel() {
     	
+//    	System.err.println("mobile host ["+this.getId()+"] battery"+batteryLevel);
 
-        Double percentageConsumed = energyAllVM > 0
-                                                ? energyAllVM / batteryCapacity
-                                                : 0.0;
-        batteryLevel = batteryLevel >= percentageConsumed
-                                    ? batteryLevel - percentageConsumed
-                                    : 0.0;
+    	Double percentageConsumed;
+    	if (energyAllVM > 0) 
+    	    percentageConsumed = energyAllVM / batteryCapacity;
+    	else 
+    	    percentageConsumed = 0.0;
 
-        if(batteryLevel.equals(0.0)){
-//        	System.err.println("mobile host ["+this.getId()+"] battery"+batteryLevel+" energy consumed: "+percentageConsumed);
-
-            setDeath(true, CloudSim.clock());
-            //aggiungo alla lista di dispositivi morti
-            deadlisthost.addMobileHost(getId());
-        }
-        energyModel.setBatteryCapacity(batteryLevel);
-    	
-
-        return batteryLevel;
+    	if (batteryLevel >= percentageConsumed) 
+    	    batteryLevel -= percentageConsumed;
+    	else 
+    	    batteryLevel = 0.0;
+//        energyModel.setBatteryCapacity(batteryLevel);    
+//        return batteryLevel;
     }
 
     /**
@@ -139,8 +138,26 @@ public class MobileHostEnergy extends MobileHost {
             double mipsTotali = vm.getTotalUtilizationOfCpuMips(timePassed);
             if (mipsTotali > 0)
                 energyModel.updateDynamicEnergyConsumption(vm.getSize(), mipsTotali);
+//            if (this.getId()==10)
+//            	energyModel.initialize();
+            
             energyAllVM = energyModel.getTotalEnergyConsumption();
+//            double cpu = energyModel.getCpuEnergyConsumption();           
+//        	System.err.println("mobile host ["+this.getId()+"] battery"+batteryLevel+" energy NET: "+ (energyAllVM - cpu) + " energy cpu: " + cpu );
+            
             this.updateBatteryLevel();
+            
+//            if(batteryLevel.equals(0.0)){
+            if(energyModel.getBatteryCapacity()<= energyAllVM){
+//            	System.err.println("mobile host ["+this.getId()+"] battery"+batteryLevel+" energy consumed: "+energyAllVM);
+            	
+                setDeath(true, CloudSim.clock());
+                //aggiungo alla lista di dispositivi morti
+                deadlisthost.addMobileHost(getId());
+            }
+            
+            
+            
         }
         return energyAllVM;
     }

@@ -30,8 +30,10 @@ public class EdgeHostEnergy extends EdgeHost {
     public EdgeHostEnergy(int id, RamProvisioner ramProvisioner, BwProvisioner bwProvisioner, long storage, List<? extends Pe> peList, VmScheduler vmScheduler, DefaultEnergyComputingModel em, Double bc) {
         super(id, ramProvisioner, bwProvisioner, storage, peList, vmScheduler);
         energyModel = em;
+        energyModel.setBattery(SimSettings.getInstance().isBATTERY());       
         batteryLevel = SimUtils.getRandomDoubleNumber(SimSettings.getInstance().getMIN_BATT_PERC(), SimSettings.getInstance().getMAX_BATT_PERC());
         batteryCapacity = bc;
+        energyModel.setBatteryCapacity(bc*batteryLevel/100);
         isDead = false;
         deadlisthost = DeadHost.getInstance();
     }
@@ -58,19 +60,23 @@ public class EdgeHostEnergy extends EdgeHost {
         deadlisthost.addEdgeHost(this.getId());
     }
 
-    public Double upDateBatteryLevel() {
+    
+    public Double upDateBatteryLevel() { //FIXME unused
         // scalare dal livello della batteria il consumo energetico
         double percentageConsumed = Math.round(energyAllVM / batteryCapacity);
 
 
         batteryLevel = batteryLevel - percentageConsumed;
-        energyModel.setBatteryCapacity(batteryLevel);
+//        energyModel.setBatteryCapacity(batteryLevel);
 
 
         return batteryLevel;
 
     }
 
+    /** FIXME unused
+     * 
+     */
     public void setBatteryLevel(Double batteryLevel) {
         this.batteryLevel = batteryLevel;
     }
@@ -91,21 +97,30 @@ public class EdgeHostEnergy extends EdgeHost {
             energyAllVM = energyModel.getTotalEnergyConsumption();
             //aggiorna il livello batteria
             this.updateBatteryLevel();
+            
+//          System.out.println("livello batteria HOST"+ batteryLevel +  "...." +this.getId());
+//            if (batteryLevel.equals(0.0)) {
+            if (energyModel.getBatteryCapacity()<= energyAllVM) {
+//            	System.err.println("edge["+this.getId()+"] _battery"+batteryLevel+" energy consumed: "+percentageConsumed);
+                setDeath(true, CloudSim.clock());
+            }           
+//        	System.err.println("edge["+this.getId()+"] _battery"+batteryLevel+" energy consumed: "+percentageConsumed);            
         }
         return energyAllVM;
     }
 
 
-    public void updateStatus() { //FIXME UNUSED
-        if (isDead()) return;
+//    public void updateStatus() { //FIXME UNUSED
+//        if (isDead()) return;
+//
+//        getEnergyModel().updateStaticEnergyConsumption();
+//        if (getEnergyModel().isBatteryPowered() && getEnergyModel().getBatteryLevelWattHour() <= 0) {
+//            setDeath(true, CloudSim.clock());
+//        }
+//    }
 
-        getEnergyModel().updateStaticEnergyConsumption();
-        if (getEnergyModel().isBatteryPowered() && getEnergyModel().getBatteryLevelWattHour() <= 0) {
-            setDeath(true, CloudSim.clock());
-        }
-    }
-
-    public Double updateBatteryLevel() {
+    
+    public void updateBatteryLevel() {
     	
 //    	System.err.println("edge["+this.getId()+"] _battery"+batteryLevel);
 
@@ -115,16 +130,9 @@ public class EdgeHostEnergy extends EdgeHost {
         batteryLevel = batteryLevel >= percentageConsumed
                 ? batteryLevel - percentageConsumed
                 : 0.0;
-        //System.out.println("livello batteria HOST"+ batteryLevel +  "...." +this.getId());
-        if (batteryLevel.equals(0.0)) {
-//        	System.err.println("edge["+this.getId()+"] _battery"+batteryLevel+" energy consumed: "+percentageConsumed);
-            setDeath(true, CloudSim.clock());
-        }
-        
-//    	System.err.println("edge["+this.getId()+"] _battery"+batteryLevel+" energy consumed: "+percentageConsumed);
 
-        energyModel.setBatteryCapacity(batteryLevel);
-        return batteryLevel;
+//        energyModel.setBatteryCapacity(batteryLevel);        
+//        return batteryLevel;
     }
 
 
