@@ -145,7 +145,7 @@ public class SampleNetworkModel extends NetworkModel {
 	public double getUploadDelay(int sourceDeviceId, int destDeviceId, Task task) {
 		double delay = 0;
 		
-		if (SimSettings.getInstance().isNetworkDown())
+		if (SimSettings.getInstance().isNetworkDown(sourceDeviceId, destDeviceId, task))
 			return delay;
 
 		//mobile device to edge device (wifi access point)
@@ -166,7 +166,7 @@ public class SampleNetworkModel extends NetworkModel {
 	public double getDownloadDelay(int sourceDeviceId, int destDeviceId, Task task) {
 		double delay = 0;
 		
-		if (SimSettings.getInstance().isNetworkDown())
+		if (SimSettings.getInstance().isNetworkDown(sourceDeviceId,  destDeviceId,  task))
 			return delay;
 		
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());

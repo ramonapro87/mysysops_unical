@@ -27,11 +27,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.utils.MobileProperties;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class SimSettings {
+	
+	private int cont_downNet = 0;
 
 	private static SimSettings instance = null;
 	private Document edgeDevicesDoc = null;
@@ -960,9 +963,23 @@ public class SimSettings {
 		return mp;
 	}
 
-	public boolean isNetworkDown() {
-		if (SimUtils.getRandomNumber(1, 100)>NET_STABILITY)
+	public boolean isNetworkDown(int sourceDeviceId, int destDeviceId, Task task) {
+		if (SimUtils.getRandomNumber(1, 100)>NET_STABILITY) {
+			cont_downNet += 1; 
+			
+			System.err.println("netDown: " + cont_downNet + " Source: " +
+							 sourceDeviceId +" , dest: "+ destDeviceId +
+							 " , tasksD: "+ task.getAssociatedDatacenterId()+
+							 " , tasksM: "+ task.getMobileDeviceId() + 
+							 " , tasksH: "+ task.getAssociatedHostId() + 
+							 " , tasksVM: "+ task.getAssociatedVmId()
+							 );
 			return true;
+			/*TODO --------17/01/2025---------
+			 * stampare un contatore 
+			 * poi trovare il modo di salvare su file i dettagli
+			 */
+		}
 		return false;					
 	}
 
