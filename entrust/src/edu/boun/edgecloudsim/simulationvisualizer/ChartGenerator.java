@@ -4,20 +4,32 @@ import edu.boun.edgecloudsim.utils.Coordinates;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.XYItemLabelGenerator;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class ChartGenerator implements IDiagrams {
 
     boolean firstTime = true;
+
+
+
 
     public void generateDiagram(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy, DiagramType diagramType) {
         try {
@@ -29,8 +41,10 @@ public class ChartGenerator implements IDiagrams {
                 XYSeries series = new XYSeries("Host" + entry.getKey());
                 for (Coordinates coord : entry.getValue()) {
                     if (diagramType == DiagramType.ENERGY_VS_TIME) {
+                        // Per ENERGY_VS_TIME, l'asse X è il tempo, l'asse Y è l'energia consumata
                         series.add(coord.getTime(), coord.getEnergyConsumed());
                     } else if (diagramType == DiagramType.MAPCHART_LOCALIZATION) {
+                        // Per MAPCHART_LOCALIZATION, l'asse X e Y sono le coordinate
                         double x = coord.getX() + Math.random() * 0.5;
                         double y = coord.getY() + Math.random() * 0.5;
                         series.add(x, y);
@@ -45,8 +59,21 @@ public class ChartGenerator implements IDiagrams {
                 System.out.println("Series " + i + ": " + series.getKey() + ", Item Count: " + series.getItemCount());
             }
 
-            // Crea il grafico senza legenda
-            JFreeChart chart = ChartFactory.createScatterPlot(diagramType.name(), "Time", "Energy Consumed", dataset, PlotOrientation.VERTICAL, true, true, false);
+            // Variabili per i titoli degli assi X e Y
+            String xAxisLabel = "";
+            String yAxisLabel = "";
+
+            // Imposta i titoli degli assi in base al tipo di diagramma
+            if (diagramType == DiagramType.ENERGY_VS_TIME) {
+                xAxisLabel = "Time";
+                yAxisLabel = "Energy Consumed";
+            } else if (diagramType == DiagramType.MAPCHART_LOCALIZATION) {
+                xAxisLabel = "Coordinate X";
+                yAxisLabel = "Coordinate Y";
+            }
+
+            // Crea il grafico scatterplot con i titoli degli assi
+            JFreeChart chart = ChartFactory.createScatterPlot(diagramType.name(), xAxisLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, true, true, false);
 
             // Rimuovi la legenda per verificare se è la causa dell'errore
             chart.removeLegend();
@@ -86,6 +113,9 @@ public class ChartGenerator implements IDiagrams {
             e.printStackTrace();
         }
     }
+
+
+
 
     private void saveChartAsImage(JFreeChart chart, String filePath, int width, int height) {
         String uuid = UUID.randomUUID().toString();
