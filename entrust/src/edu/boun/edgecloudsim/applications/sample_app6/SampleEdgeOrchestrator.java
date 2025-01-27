@@ -49,19 +49,10 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 	@Override
 	public int getDeviceToOffload(Task task) {
 		int result = 0;
-		int a=1;
-		int b=1;
-		if (a==b){
-			result = SimSettings.CLOUD_DATACENTER_ID;
-			return result;
-		}	
 		
 		if(simScenario.equals("SINGLE_TIER")){
 			result = SimSettings.GENERIC_EDGE_DEVICE_ID;
-		}
-		
-		
-		
+			}
 		if(policy.equals("ONLY_EDGE")){
 			result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 		}
