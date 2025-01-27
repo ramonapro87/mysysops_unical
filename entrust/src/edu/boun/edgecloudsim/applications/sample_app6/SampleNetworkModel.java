@@ -24,6 +24,7 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class SampleNetworkModel extends NetworkModel {
 	private int[] wlanClients;
+	private int[] wanClients;
 	
 	public static final double[] experimentalWlanDelay = {
 		/*1 Client*/ 88040.279 /*(Kbps)*/,
@@ -129,12 +130,41 @@ public class SampleNetworkModel extends NetworkModel {
 		/*100 Clients*/ 1500.631 /*(Kbps)*/
 	};
 	
+	public static final double[] experimentalWanDelay = {
+			/*1 Client*/ 20703.973 /*(Kbps)*/,
+			/*2 Clients*/ 12023.957 /*(Kbps)*/,
+			/*3 Clients*/ 9887.785 /*(Kbps)*/,
+			/*4 Clients*/ 8915.775 /*(Kbps)*/,
+			/*5 Clients*/ 8259.277 /*(Kbps)*/,
+			/*6 Clients*/ 7560.574 /*(Kbps)*/,
+			/*7 Clients*/ 7262.140 /*(Kbps)*/,
+			/*8 Clients*/ 7155.361 /*(Kbps)*/,
+			/*9 Clients*/ 7041.153 /*(Kbps)*/,
+			/*10 Clients*/ 6994.595 /*(Kbps)*/,
+			/*11 Clients*/ 6653.232 /*(Kbps)*/,
+			/*12 Clients*/ 6111.868 /*(Kbps)*/,
+			/*13 Clients*/ 5570.505 /*(Kbps)*/,
+			/*14 Clients*/ 5029.142 /*(Kbps)*/,
+			/*15 Clients*/ 4487.779 /*(Kbps)*/,
+			/*16 Clients*/ 3899.729 /*(Kbps)*/,
+			/*17 Clients*/ 3311.680 /*(Kbps)*/,
+			/*18 Clients*/ 2723.631 /*(Kbps)*/,
+			/*19 Clients*/ 2135.582 /*(Kbps)*/,
+			/*20 Clients*/ 1547.533 /*(Kbps)*/,
+			/*21 Clients*/ 1500.252 /*(Kbps)*/,
+			/*22 Clients*/ 1452.972 /*(Kbps)*/,
+			/*23 Clients*/ 1405.692 /*(Kbps)*/,
+			/*24 Clients*/ 1358.411 /*(Kbps)*/,
+			/*25 Clients*/ 1311.131 /*(Kbps)*/
+		};
+	
 	public SampleNetworkModel(int _numberOfMobileDevices, String _simScenario) {
 		super(_numberOfMobileDevices, _simScenario);
 	}
 
 	@Override
 	public void initialize() {
+		wanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
 		wlanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
 	}
 
@@ -151,6 +181,8 @@ public class SampleNetworkModel extends NetworkModel {
 		//mobile device to edge device (wifi access point)
 		if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			delay = getWlanUploadDelay(task.getSubmittedLocation(), task.getCloudletFileSize());
+		}else if (destDeviceId == SimSettings.CLOUD_DATACENTER_ID) {
+			delay = getWanUploadDelay(task.getSubmittedLocation(), task.getCloudletFileSize());
 		}
 		else {
 			SimLogger.printLine("Error - unknown device id in getUploadDelay(). Terminating simulation...");
@@ -174,8 +206,9 @@ public class SampleNetworkModel extends NetworkModel {
 		//edge device (wifi access point) to mobile device
 		if (sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
-		}
-		else {
+		} else if (sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID) {
+			delay = getWanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());						
+		} else {
 			SimLogger.printLine("Error - unknown device id in getDownloadDelay(). Terminating simulation...");
 			System.exit(0);
 		}
@@ -185,7 +218,9 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@Override
 	public void uploadStarted(Location accessPointLocation, int destDeviceId) {
-		if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+			wanClients[accessPointLocation.getServingWlanId()]++;
+		else if(destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]++;
 		}
 		else {
@@ -196,7 +231,9 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@Override
 	public void uploadFinished(Location accessPointLocation, int destDeviceId) {
-		 if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+			wanClients[accessPointLocation.getServingWlanId()]--;
+		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]--;
 		 }
 		else {
@@ -207,7 +244,9 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@Override
 	public void downloadStarted(Location accessPointLocation, int sourceDeviceId) {
-		if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+			wanClients[accessPointLocation.getServingWlanId()]++;
+		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]++;
 		}
 		else {
@@ -218,7 +257,9 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@Override
 	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {
-		if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
+			wanClients[accessPointLocation.getServingWlanId()]--;
+		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 			wlanClients[accessPointLocation.getServingWlanId()]--;
 		}
 		else {
@@ -240,10 +281,27 @@ public class SampleNetworkModel extends NetworkModel {
 
 		//System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
 		return result;
-	}
-	
+	}	
 	//wlan upload and download delay is symmetric in this model
 	private double getWlanUploadDelay(Location accessPointLocation, double dataSize) {
 		return getWlanDownloadDelay(accessPointLocation, dataSize);
 	}
+	
+	
+	
+	private double getWanDownloadDelay(Location accessPointLocation, double dataSize) {
+		int numOfWanUser = wanClients[accessPointLocation.getServingWlanId()];
+		double taskSizeInKb = dataSize * (double)8; //KB to Kb
+		double result=0;
+		
+		if(numOfWanUser < experimentalWanDelay.length)
+			result = taskSizeInKb /*Kb*/ / (experimentalWanDelay[numOfWanUser]) /*Kbps*/;		
+		//System.out.println("--> " + numOfWanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");		
+		return result;
+	}		
+	//wan upload and download delay is symmetric in this model
+	private double getWanUploadDelay(Location accessPointLocation, double dataSize) {
+		return getWanDownloadDelay(accessPointLocation, dataSize);
+	}
+	
 }

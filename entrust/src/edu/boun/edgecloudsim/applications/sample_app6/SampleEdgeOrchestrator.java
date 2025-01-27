@@ -13,10 +13,12 @@ package edu.boun.edgecloudsim.applications.sample_app6;
 
 import java.util.List;
 
+import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.Vm;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import edu.boun.edgecloudsim.cloud_server.CloudVM;
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_orchestrator.EdgeOrchestrator;
@@ -47,7 +49,19 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 	@Override
 	public int getDeviceToOffload(Task task) {
 		int result = 0;
-
+		int a=1;
+		int b=1;
+		if (a==b){
+			result = SimSettings.CLOUD_DATACENTER_ID;
+			return result;
+		}	
+		
+		if(simScenario.equals("SINGLE_TIER")){
+			result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+		}
+		
+		
+		
 		if(policy.equals("ONLY_EDGE")){
 			result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 		}
@@ -64,6 +78,20 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 			else
 				result = SimSettings.GENERIC_EDGE_DEVICE_ID;
 		}
+		
+		/***************copiato*****************/
+		else if (policy.equals("UTILIZATION_BASED")) {
+
+			double edgeUtilization = SimManager.getInstance().getEdgeServerManager().getAvgUtilization();
+
+			double utilization = edgeUtilization;
+			if (utilization > 80)
+				result = SimSettings.CLOUD_DATACENTER_ID;
+			else
+				result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+
+		}
+		/********************************/
 		else {
 			SimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");
 			System.exit(0);
@@ -98,8 +126,30 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 					}
 				}
 			}
+		}		
+		/********************* PRESO DA app1 o 2*****************/
+		else if (deviceId == SimSettings.CLOUD_DATACENTER_ID) {
+			
+		
+			double selectedVmCapacity = 0; // start with min value
+			List<Host> list = SimManager.getInstance().getCloudServerManager().getDatacenter().getHostList();
+			for (int hostIndex = 0; hostIndex < list.size(); hostIndex++) {
+				List<CloudVM> vmArray = SimManager.getInstance().getCloudServerManager().getVmList(hostIndex);
+				for (int vmIndex = 0; vmIndex < vmArray.size(); vmIndex++) {
+					double requiredCapacity = ((CpuUtilizationModel_Custom) task.getUtilizationModelCpu())
+							.predictUtilization(vmArray.get(vmIndex).getVmType());
+					double targetVmCapacity = (double) 100
+							- vmArray.get(vmIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+					if (requiredCapacity <= targetVmCapacity && targetVmCapacity > selectedVmCapacity) {
+						selectedVM = vmArray.get(vmIndex);
+						selectedVmCapacity = targetVmCapacity;
+					}
+				}
+			}
 		}
-		else{
+		
+		///////////////////////////////////////////
+			else{
 			SimLogger.printLine("Unknown device id! The simulation has been terminated.");
 			System.exit(0);
 		}

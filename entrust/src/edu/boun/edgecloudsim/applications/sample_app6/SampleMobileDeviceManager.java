@@ -46,6 +46,8 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
     private static final int REQUEST_RECEIVED_BY_EDGE_DEVICE = BASE + 1;
     private static final int REQUEST_RECEIVED_BY_MOBILE_DEVICE = BASE + 2;
     private static final int RESPONSE_RECEIVED_BY_MOBILE_DEVICE = BASE + 3;
+	private static final int REQUEST_RECEIVED_BY_CLOUD = BASE + +4;
+
 
     private DeadHost deadHost;
 
@@ -90,14 +92,34 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
     protected void processCloudletReturn(SimEvent ev) {
         NetworkModel networkModel = SimManager.getInstance().getNetworkModel();
         Task task = (Task) ev.getData();
-
         ((SimManagerEnergy) SimManager.getInstance()).calculateNetConsume(task, SimUtils.RECEPTION);
+        SimLogger.getInstance().taskExecuted(task.getCloudletId());        
+        double delay;
+		if(task.getAssociatedDatacenterId() == SimSettings.CLOUD_DATACENTER_ID){
+			//SimLogger.printLine(CloudSim.clock() + ": " + getName() + ": task #" + task.getCloudletId() + " received from cloud");
+			delay = networkModel.getDownloadDelay(SimSettings.CLOUD_DATACENTER_ID, task.getMobileDeviceId(), task);
+			if(delay > 0)
+			{
+				Location currentLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(),CloudSim.clock()+delay);
+				if(task.getSubmittedLocation().getServingWlanId() == currentLocation.getServingWlanId())
+				{
+					networkModel.downloadStarted(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID);
+					SimLogger.getInstance().setDownloadDelay(task.getCloudletId(), delay, NETWORK_DELAY_TYPES.WAN_DELAY);
+					schedule(getId(), delay, RESPONSE_RECEIVED_BY_MOBILE_DEVICE, task);
+				}
+				else
+				{
+					SimLogger.getInstance().failedDueToMobility(task.getCloudletId(), CloudSim.clock());
+				}
+			}
+			else
+			{
+				SimLogger.getInstance().failedDueToBandwidth(task.getCloudletId(), CloudSim.clock(), NETWORK_DELAY_TYPES.WAN_DELAY);
+			}
+		}
+		else if (task.getAssociatedDatacenterId() == SimSettings.GENERIC_EDGE_DEVICE_ID) {
 
-        SimLogger.getInstance().taskExecuted(task.getCloudletId());
-
-        if (task.getAssociatedDatacenterId() == SimSettings.GENERIC_EDGE_DEVICE_ID) {
-
-            double delay = networkModel.getDownloadDelay(task.getAssociatedDatacenterId(), task.getMobileDeviceId(), task);
+            delay = networkModel.getDownloadDelay(task.getAssociatedDatacenterId(), task.getMobileDeviceId(), task);
 
             if (delay > 0) {
                 Location currentLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock() + delay);
@@ -114,6 +136,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 //                System.err.println("fallimento per banda - task:" + task.getCloudletId() + " device:" + task.getMobileDeviceId());
 
             }
+            
         } else if (task.getAssociatedDatacenterId() == SimSettings.MOBILE_DATACENTER_ID) {
             SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
 
@@ -165,6 +188,13 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
                 SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
                 break;
             }
+			case REQUEST_RECEIVED_BY_CLOUD:
+			{
+				Task task = (Task) ev.getData();
+				networkModel.uploadFinished(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID);
+				submitTaskToVm(task, SimSettings.VM_TYPES.CLOUD_VM);
+				break;
+			}
             default:
                 SimLogger.printLine(getName() + ".processOtherEvent(): " + "Error - event unknown by this DatacenterBroker. Terminating simulation...");
                 System.exit(0);
@@ -295,7 +325,14 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 
         int nextHopId = SimManager.getInstance().getEdgeOrchestrator().getDeviceToOffload(task);
 
-        if (nextHopId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+        
+		if(nextHopId == SimSettings.CLOUD_DATACENTER_ID){
+			delay = networkModel.getUploadDelay(task.getMobileDeviceId(), SimSettings.CLOUD_DATACENTER_ID, task);
+			vmType = SimSettings.VM_TYPES.CLOUD_VM;
+			nextEvent = REQUEST_RECEIVED_BY_CLOUD;
+			delayType = NETWORK_DELAY_TYPES.WAN_DELAY;
+			nextDeviceForNetworkModel = SimSettings.CLOUD_DATACENTER_ID;
+		}else if (nextHopId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
             delay = networkModel.getUploadDelay(task.getMobileDeviceId(), nextHopId, task);
             vmType = SimSettings.VM_TYPES.EDGE_VM;
             nextEvent = REQUEST_RECEIVED_BY_EDGE_DEVICE;

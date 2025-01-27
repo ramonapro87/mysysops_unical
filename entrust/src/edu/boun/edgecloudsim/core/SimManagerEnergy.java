@@ -168,8 +168,8 @@ public class SimManagerEnergy extends SimManager {
 		}
 		default://TODO
 			host.getEnergyModel().setConnectivityType(NETWORK_DELAY_TYPES.WLAN_DELAY);
-			System.err.println("-------TO---????" + nexthop);
-			break;
+            SimLogger.printLine("Unknown datacenter id! Terminating simulation..." + nexthop);
+            System.exit(0);
 
 
 		}
