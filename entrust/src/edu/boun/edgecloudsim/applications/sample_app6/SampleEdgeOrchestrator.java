@@ -118,10 +118,7 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 				}
 			}
 		}		
-		/********************* PRESO DA app1 o 2*****************/
 		else if (deviceId == SimSettings.CLOUD_DATACENTER_ID) {
-			
-		
 			double selectedVmCapacity = 0; // start with min value
 			List<Host> list = SimManager.getInstance().getCloudServerManager().getDatacenter().getHostList();
 			for (int hostIndex = 0; hostIndex < list.size(); hostIndex++) {
@@ -138,8 +135,6 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 				}
 			}
 		}
-		
-		///////////////////////////////////////////
 			else{
 			SimLogger.printLine("Unknown device id! The simulation has been terminated.");
 			System.exit(0);
