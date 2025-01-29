@@ -23,8 +23,29 @@ import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 
 public class SampleNetworkModel extends NetworkModel {
+	
+	
+	public static double MAN_BW = 1300*1024; //Kbps
+
 	private int[] wlanClients;
 	private int[] wanClients;
+	
+	
+	
+	private double lastMM1QueueUpdateTime;
+	private double ManPoissonMeanForDownload; //seconds
+	private double ManPoissonMeanForUpload; //seconds
+
+	private double avgManTaskInputSize; //bytes
+	private double avgManTaskOutputSize; //bytes
+
+	//record last n task statistics during MM1_QUEUE_MODEL_UPDATE_INTEVAL seconds to simulate mmpp/m/1 queue model
+	private double totalManTaskInputSize;
+	private double totalManTaskOutputSize;
+	private double numOfManTaskForDownload;
+	private double numOfManTaskForUpload;
+	
+	
 	
 	public static final double[] experimentalWlanDelay = {
 		/*1 Client*/ 88040.279 /*(Kbps)*/,
@@ -166,6 +187,42 @@ public class SampleNetworkModel extends NetworkModel {
 	public void initialize() {
 		wanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
 		wlanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
+		
+		/**********************************/
+		
+		int numOfApp = SimSettings.getInstance().getTaskLookUpTable().length;
+		SimSettings SS = SimSettings.getInstance();
+		for(int taskIndex=0; taskIndex<numOfApp; taskIndex++) {
+			if(SS.getTaskLookUpTable()[taskIndex][0] == 0) {
+				SimLogger.printLine("Usage percentage of task " + taskIndex + " is 0! Terminating simulation...");
+				System.exit(0);
+			}
+			else{
+				double weight = SS.getTaskLookUpTable()[taskIndex][0]/(double)100;
+				
+				//assume half of the tasks use the MAN at the beginning
+				ManPoissonMeanForDownload += ((SS.getTaskLookUpTable()[taskIndex][2])*weight) * 4;
+				ManPoissonMeanForUpload = ManPoissonMeanForDownload;
+				
+				avgManTaskInputSize += SS.getTaskLookUpTable()[taskIndex][5]*weight;
+				avgManTaskOutputSize += SS.getTaskLookUpTable()[taskIndex][6]*weight;
+			}
+		}
+
+		ManPoissonMeanForDownload = ManPoissonMeanForDownload/numOfApp;
+		ManPoissonMeanForUpload = ManPoissonMeanForUpload/numOfApp;
+		avgManTaskInputSize = avgManTaskInputSize/numOfApp;
+		avgManTaskOutputSize = avgManTaskOutputSize/numOfApp;
+		
+		lastMM1QueueUpdateTime = SimSettings.CLIENT_ACTIVITY_START_TIME;
+		totalManTaskOutputSize = 0;
+		numOfManTaskForDownload = 0;
+		totalManTaskInputSize = 0;
+		numOfManTaskForUpload = 0;
+		
+		/**********************************/
+		
+		
 	}
 
     /**
@@ -178,16 +235,37 @@ public class SampleNetworkModel extends NetworkModel {
 		if (SimSettings.getInstance().isNetworkDown(sourceDeviceId, destDeviceId, task))
 			return delay;
 
+		
+		/******************APP2*****************/				
+		//special case for man communication
+		if(sourceDeviceId == destDeviceId && sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID){
+			return delay = getManUploadDelay();
+		}
+		
+		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(sourceDeviceId,CloudSim.clock());
+		
+		//mobile device to cloud server
+		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID){
+			delay = getWanUploadDelay(accessPointLocation, task.getCloudletFileSize());
+		}
 		//mobile device to edge device (wifi access point)
-		if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
-			delay = getWlanUploadDelay(task.getSubmittedLocation(), task.getCloudletFileSize());
-		}else if (destDeviceId == SimSettings.CLOUD_DATACENTER_ID) {
-			delay = getWanUploadDelay(task.getSubmittedLocation(), task.getCloudletFileSize());
+		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+			delay = getWlanUploadDelay(accessPointLocation, task.getCloudletFileSize());
 		}
-		else {
-			SimLogger.printLine("Error - unknown device id in getUploadDelay(). Terminating simulation...");
-			System.exit(0);
-		}
+		
+		/******************APP2*****************/				
+
+		
+		if(!simScenario.contains("TWO_TIER"))
+			// mobile device to edge device (wifi access point)
+			if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
+				delay = getWlanUploadDelay(task.getSubmittedLocation(), task.getCloudletFileSize());
+			} else if (destDeviceId == SimSettings.CLOUD_DATACENTER_ID) {
+				delay = getWanUploadDelay(task.getSubmittedLocation(), task.getCloudletFileSize());
+			} else {
+				SimLogger.printLine("Error - unknown device id in getUploadDelay(). Terminating simulation...");
+				System.exit(0);
+			}
 		return delay;
 	}
 
@@ -256,7 +334,7 @@ public class SampleNetworkModel extends NetworkModel {
 	}
 
 	@Override
-	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {
+	public void downloadFinished(Location accessPointLocation, int sourceDeviceId) {		
 		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID)
 			wanClients[accessPointLocation.getServingWlanId()]--;
 		else if(sourceDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
@@ -269,14 +347,34 @@ public class SampleNetworkModel extends NetworkModel {
 	}
 
 	private double getWlanDownloadDelay(Location accessPointLocation, double dataSize) {
+		
+//		System.out.print("wlanClients: ");
+//		for (int i : wlanClients) {
+//			System.out.print(i+" ");
+//		}
+//		System.out.println();
+		
 		int numOfWlanUser = wlanClients[accessPointLocation.getServingWlanId()];
+		
+		if (numOfWlanUser <0) {
+			numOfWlanUser = 0; //FIXME
+			
+			System.out.print("wlanClients: ");
+			for (int i : wlanClients) {
+				System.out.print(i+" ");
+			}
+			System.out.println();
+			
+		}
+		
 		double taskSizeInKb = dataSize * (double)8; //KB to Kb
 		double result=0;
 		
-		if(numOfWlanUser < 0)
-			System.out.println("--> ");
+//		if(numOfWlanUser < 0)
+//			System.out.println("--> ");
 		
 		if(numOfWlanUser < experimentalWlanDelay.length)
+//			System.out.println(numOfWlanUser);
 			result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
 
 		//System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
@@ -303,5 +401,48 @@ public class SampleNetworkModel extends NetworkModel {
 	private double getWanUploadDelay(Location accessPointLocation, double dataSize) {
 		return getWanDownloadDelay(accessPointLocation, dataSize);
 	}
+	
+	
+	/*******************************/
+	
+	
+	private double getManUploadDelay() {
+		double result = calculateMM1(SimSettings.getInstance().getInternalLanDelay(),
+				MAN_BW,
+				ManPoissonMeanForUpload,
+				avgManTaskInputSize,
+				numberOfMobileDevices);
+		
+		totalManTaskInputSize += avgManTaskInputSize;
+		numOfManTaskForUpload++;
+
+		//System.out.println(CloudSim.clock() + " -> " + SimManager.getInstance().getNumOfMobileDevice() + " user, " + result + " sec");
+		
+		return result;
+	}
+	
+	
+	private double calculateMM1(double propagationDelay, double bandwidth /*Kbps*/, double PoissonMean, double avgTaskSize /*KB*/, int deviceCount){
+		double mu=0, lamda=0;
+		
+		avgTaskSize = avgTaskSize * 8; //convert from KB to Kb
+
+        lamda = ((double)1/(double)PoissonMean); //task per seconds
+		mu = bandwidth /*Kbps*/ / avgTaskSize /*Kb*/; //task per seconds
+		double result = (double)1 / (mu-lamda*(double)deviceCount);
+		
+		if(result < 0)
+			return 0;
+		
+		result += propagationDelay;
+		
+		return (result > 15) ? 0 : result;
+	}
+	
+	/*******************************/
+	
+	
+	
+	
 	
 }
