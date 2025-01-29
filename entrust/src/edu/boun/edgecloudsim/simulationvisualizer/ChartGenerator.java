@@ -4,33 +4,23 @@ import edu.boun.edgecloudsim.utils.Coordinates;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.XYItemLabelGenerator;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYItemRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class ChartGenerator implements IDiagrams {
 
-    boolean firstTime = true;
-
-
-
-
+    // Metodo per generare il diagramma
     public void generateDiagram(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy, DiagramType diagramType) {
         try {
             // Crea un dataset
@@ -73,9 +63,11 @@ public class ChartGenerator implements IDiagrams {
             }
 
             // Crea il grafico scatterplot con i titoli degli assi
-            JFreeChart chart = ChartFactory.createScatterPlot(diagramType.name(), xAxisLabel, yAxisLabel, dataset, PlotOrientation.VERTICAL, true, true, false);
+            JFreeChart chart = ChartFactory.createScatterPlot(
+                    diagramType.name(), xAxisLabel, yAxisLabel, dataset,
+                    PlotOrientation.VERTICAL, true, true, false);
 
-            // Rimuovi la legenda per verificare se è la causa dell'errore
+            // Rimuovi la legenda per evitare conflitti
             chart.removeLegend();
 
             // Mostra il grafico in una finestra
@@ -89,21 +81,15 @@ public class ChartGenerator implements IDiagrams {
                 frame.setVisible(true);
             });
 
+            // Cartella di destinazione per il salvataggio dei grafici
             String folder = "sim_results/diagram_result";
 
-            if (firstTime) {
-                firstTime = false;
-                // Pulizia della cartella
-                File directory = new File(folder);
-                if (directory.exists()) {
-                    File[] files = directory.listFiles();
-                    if (files != null) {
-                        for (File file : files) {
-                            file.delete();
-                        }
-                    }
-                }
+            // Crea la cartella se non esiste
+            File directory = new File(folder);
+            if (!directory.exists()) {
+                directory.mkdirs();
             }
+
             // Salva il grafico come immagine
             saveChartAsImage(chart, folder, 800, 600);
 
@@ -114,28 +100,29 @@ public class ChartGenerator implements IDiagrams {
         }
     }
 
-
-
-
+    // Metodo per salvare il grafico come immagine
     private void saveChartAsImage(JFreeChart chart, String filePath, int width, int height) {
         String uuid = UUID.randomUUID().toString();
         String fileName = filePath + "/File_" + uuid + ".png";
 
         File outputFile = new File(fileName);
-        outputFile.getParentFile().mkdirs(); // Crea le directory se non esistono
         BufferedImage chartImage = chart.createBufferedImage(width, height);
         try {
+            // Salva l'immagine come PNG
             ImageIO.write(chartImage, "png", outputFile);
+            System.out.println("File salvato come immagine: " + fileName);
         } catch (IOException e) {
-            System.err.println("Error saving chart: " + e.getMessage());
+            System.err.println("Errore nel salvataggio del file: " + e.getMessage());
         }
     }
 
+    // Metodo per generare i grafici di tipo ENERGY_VS_TIME
     @Override
     public void generateEnergyCharts(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy) {
         generateDiagram(coordinatesById, scenarioName, orchestretorPolicy, DiagramType.ENERGY_VS_TIME);
     }
 
+    // Metodo per generare i grafici di tipo MAPCHART_LOCALIZATION
     @Override
     public void generateMapChart(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy) {
         generateDiagram(coordinatesById, scenarioName, orchestretorPolicy, DiagramType.MAPCHART_LOCALIZATION);
