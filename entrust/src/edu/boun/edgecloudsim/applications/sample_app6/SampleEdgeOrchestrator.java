@@ -115,6 +115,8 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 					result = SimSettings.MOBILE_DATACENTER_ID;
 				else
 					result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+				
+				// TODO ADD CLOUD when it works
 			}
 			else {
 				SimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");

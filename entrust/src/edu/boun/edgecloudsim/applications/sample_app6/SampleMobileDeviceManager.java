@@ -46,7 +46,7 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
     private static final int REQUEST_RECEIVED_BY_EDGE_DEVICE = BASE + 1;
     private static final int REQUEST_RECEIVED_BY_MOBILE_DEVICE = BASE + 2;
     private static final int RESPONSE_RECEIVED_BY_MOBILE_DEVICE = BASE + 3;
-	private static final int REQUEST_RECEIVED_BY_CLOUD = BASE + +4;
+	private static final int REQUEST_RECEIVED_BY_CLOUD = BASE + 4;
 
 
     private DeadHost deadHost;
