@@ -29,6 +29,8 @@ import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileVM;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
+import edu.boun.edgecloudsim.utils.Location;
+
 
 public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 	
@@ -104,19 +106,30 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 			} else if (policy.equals("ONLY_MOBILE")) {
 				result = SimSettings.MOBILE_DATACENTER_ID;
 			} else if (policy.equals("HYBRID")) {
-				List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager()
-						.getVmList(task.getMobileDeviceId());
+				List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
 				double requiredCapacity = ((CpuUtilizationModel_Custom) task.getUtilizationModelCpu())
 						.predictUtilization(vmArray.get(0).getVmType());
-				double targetVmCapacity = (double) 100
-						- vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+				double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
 
 				if (requiredCapacity <= targetVmCapacity)
 					result = SimSettings.MOBILE_DATACENTER_ID;
 				else
-					result = SimSettings.GENERIC_EDGE_DEVICE_ID;
-				
-				// TODO ADD CLOUD when it works
+//					result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+				{
+					
+					// **********added cloud to hybrid *******
+					Location deviceLocation = SimManager.getInstance().getMobilityModel().getLocation(task.getMobileDeviceId(), CloudSim.clock());
+					//in our scenasrio, serving wlan ID is equal to the host id
+					//because there is only one host in one place
+					int relatedHostId=deviceLocation.getServingWlanId();
+					List<EdgeVM> vmArray2 = SimManager.getInstance().getEdgeServerManager().getVmList(relatedHostId);
+					targetVmCapacity = (double) 100 - vmArray2.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+
+					if (requiredCapacity <= targetVmCapacity)
+						result = SimSettings.GENERIC_EDGE_DEVICE_ID;
+					else
+						result = SimSettings.CLOUD_DATACENTER_ID;
+				}
 			}
 			else {
 				SimLogger.printLine("Unknow edge orchestrator policy! Terminating simulation...");
@@ -132,7 +145,23 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 	public Vm getVmToOffload(Task task, int deviceId) {
 		Vm selectedVM = null;
 		
-		if (deviceId == SimSettings.MOBILE_DATACENTER_ID) {
+		if(deviceId == SimSettings.CLOUD_DATACENTER_ID){
+			//Select VM on cloud devices via Least Loaded algorithm!
+			double selectedVmCapacity = 0; //start with min value
+			List<Host> list = SimManager.getInstance().getCloudServerManager().getDatacenter().getHostList();
+			for (int hostIndex=0; hostIndex < list.size(); hostIndex++) {
+				List<CloudVM> vmArray = SimManager.getInstance().getCloudServerManager().getVmList(hostIndex);
+				for(int vmIndex=0; vmIndex<vmArray.size(); vmIndex++){
+					double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(vmIndex).getVmType());
+					double targetVmCapacity = (double)100 - vmArray.get(vmIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
+					if(requiredCapacity <= targetVmCapacity && targetVmCapacity > selectedVmCapacity){
+						selectedVM = vmArray.get(vmIndex);
+						selectedVmCapacity = targetVmCapacity;
+					}
+	            }
+			}
+		}
+		else if (deviceId == SimSettings.MOBILE_DATACENTER_ID) {
 			List<MobileVM> vmArray = SimManager.getInstance().getMobileServerManager().getVmList(task.getMobileDeviceId());
 			double requiredCapacity = ((CpuUtilizationModel_Custom)task.getUtilizationModelCpu()).predictUtilization(vmArray.get(0).getVmType());
 			double targetVmCapacity = (double) 100 - vmArray.get(0).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
@@ -154,36 +183,14 @@ public class SampleEdgeOrchestrator extends EdgeOrchestrator {
 					}
 				}
 			}
-		}		
-		else if (deviceId == SimSettings.CLOUD_DATACENTER_ID) {
-			double selectedVmCapacity = 0; // start with min value
-			List<Host> list = SimManager.getInstance().getCloudServerManager().getDatacenter().getHostList();
-			for (int hostIndex = 0; hostIndex < list.size(); hostIndex++) {
-				List<CloudVM> vmArray = SimManager.getInstance().getCloudServerManager().getVmList(hostIndex);
-				for (int vmIndex = 0; vmIndex < vmArray.size(); vmIndex++) {
-					double requiredCapacity = ((CpuUtilizationModel_Custom) task.getUtilizationModelCpu()).predictUtilization(vmArray.get(vmIndex).getVmType());
-					double targetVmCapacity = (double) 100 - vmArray.get(vmIndex).getCloudletScheduler().getTotalUtilizationOfCpu(CloudSim.clock());
-					if (requiredCapacity <= targetVmCapacity && targetVmCapacity > selectedVmCapacity) {
-						selectedVM = vmArray.get(vmIndex);
-						selectedVmCapacity = targetVmCapacity;
-					}
-				}
-			}
 		}
-
-// BASIC EDGE ORCHESTRATOR VERSION
-//		else if(simScenario.equals("TWO_TIER_WITH_EO"))
-//			selectedVM = selectVmOnLoadBalancer(task);
-//		else
-//			selectedVM = selectVmOnHost(task);
-
-		
 		else{
 			SimLogger.printLine("Unknown device id! The simulation has been terminated.");
 			System.exit(0);
 		}
 		
 		return selectedVM;
+
 	}
 
 	@Override

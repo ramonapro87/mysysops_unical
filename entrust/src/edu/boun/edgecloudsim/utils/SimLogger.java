@@ -329,6 +329,9 @@ public class SimLogger {
 		taskMap.put(taskId, new LogItem(deviceId, taskType, taskLenght, taskInputSize, taskOutputSize));
 	}
 
+	public void taskStarted(int taskId,  double time) {		
+		taskMap.get(taskId).taskStarted(time,0);
+	}
 	public void taskStarted(int taskId,int  deviceId,  double time) {		
 		taskMap.get(taskId).taskStarted(time,deviceId);
 	}
