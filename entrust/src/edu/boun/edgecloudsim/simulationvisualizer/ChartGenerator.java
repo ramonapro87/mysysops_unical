@@ -5,6 +5,8 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -14,12 +16,12 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class ChartGenerator implements IDiagrams {
-
+    // Cartella di destinazione per il salvataggio dei grafici
+    String folder = "sim_results/diagram_result";
     // Metodo per generare il diagramma
     public void generateDiagram(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy, DiagramType diagramType) {
         try {
@@ -81,8 +83,7 @@ public class ChartGenerator implements IDiagrams {
                 frame.setVisible(true);
             });
 
-            // Cartella di destinazione per il salvataggio dei grafici
-            String folder = "sim_results/diagram_result";
+
 
             // Crea la cartella se non esiste
             File directory = new File(folder);
@@ -127,4 +128,14 @@ public class ChartGenerator implements IDiagrams {
     public void generateMapChart(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy) {
         generateDiagram(coordinatesById, scenarioName, orchestretorPolicy, DiagramType.MAPCHART_LOCALIZATION);
     }
-}
+
+
+
+
+
+    }
+
+
+
+
+

@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import edu.boun.edgecloudsim.core.*;
+import edu.boun.edgecloudsim.simulationvisualizer.ChartGenerator;
+import edu.boun.edgecloudsim.simulationvisualizer.IDiagrams;
 import edu.boun.edgecloudsim.simulationvisualizer.ServiceTimeDiagram;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -34,7 +36,7 @@ public class MainAppEntrust {
 		//disable console output of cloudsim library
 		Log.disable();
 		List<ServiceTimeDiagram> alldata= new LinkedList<>();
-
+		IDiagrams avgServiceTimePlot= new ChartGenerator();
 		
 		//enable console output and file output of this application
 		SimLogger.enablePrintLog();
@@ -99,10 +101,7 @@ public class MainAppEntrust {
 					ServiceTimeDiagram sd= new ServiceTimeDiagram();
 					sd.setNumDevice(j);
 					sd.setScenarioName(simScenario);
-					sd.setServiceTime(SimLogger.getInstance().getServiceTime4Graphics());
-					// list for plot
-  					 System.out.println(sd.toString());
-					alldata.add(sd);
+
 					try {
 						// First step: Initialize the CloudSim package. It should be called
 						// before creating any entities.
@@ -136,7 +135,10 @@ public class MainAppEntrust {
 
 					SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
 					SimLogger.printLine("----------------------------------------------------------------------");
-
+					sd.setServiceTime(SimLogger.getInstance().getServiceTime4Graphics());
+					// list for plot
+					System.out.println(sd.toString());
+					//alldata.add(sd);
 					//	Print initial energy values
 					//SimLogger.printLine("connectivity type " + SS.getCONNECTIVITY());
 					Map<String,Double> energyValue = new HashMap<>();
@@ -158,5 +160,6 @@ public class MainAppEntrust {
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
+		//avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
 	}
 }
