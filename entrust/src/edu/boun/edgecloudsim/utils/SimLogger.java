@@ -47,7 +47,7 @@ import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
 
 public class SimLogger {
 	public Double getServiceTime4Graphics() {
-
+return serviceTime[numOfAppTypes] / (double) completedTask[numOfAppTypes];
 	}
 
 	public static enum TASK_STATUS {

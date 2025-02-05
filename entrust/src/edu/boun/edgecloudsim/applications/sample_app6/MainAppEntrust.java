@@ -11,8 +11,7 @@ package edu.boun.edgecloudsim.applications.sample_app6;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 
 import edu.boun.edgecloudsim.core.*;
 import edu.boun.edgecloudsim.simulationvisualizer.ServiceTimeDiagram;
@@ -25,8 +24,6 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 
 //import for energy values
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainAppEntrust {
 	
@@ -36,8 +33,8 @@ public class MainAppEntrust {
 	public static void main(String[] args) {
 		//disable console output of cloudsim library
 		Log.disable();
+		List<ServiceTimeDiagram> alldata= new LinkedList<>();
 
-		ServiceTimeDiagram sd= new ServiceTimeDiagram();
 		
 		//enable console output and file output of this application
 		SimLogger.enablePrintLog();
@@ -82,7 +79,8 @@ public class MainAppEntrust {
 		SimLogger.printLine("----------------------------------------------------------------------");
 		SimManagerEnergy manager = null;
 		for(int j=SS.getMinNumOfMobileDev(); j<=SS.getMaxNumOfMobileDev(); j+=SS.getMobileDevCounterSize())
-		{			
+		{
+
 			SS.generateMobileConfig(j); //Random setup of mobile devices
 			//End of orchestrators loop
 			for(int k=0; k<SS.getSimulationScenarios().length; k++)
@@ -97,10 +95,14 @@ public class MainAppEntrust {
 					SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
 					SimLogger.printLine("Duration: " + SS.getSimulationTime() / 60 + " min (warm up period: " + SS.getWarmUpPeriod() / 60 + " min) - #devices: " + j);
 					SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy + "_" + j + "DEVICES");
+					//data for plots
+					ServiceTimeDiagram sd= new ServiceTimeDiagram();
 					sd.setNumDevice(j);
 					sd.setScenarioName(simScenario);
 					sd.setServiceTime(SimLogger.getInstance().getServiceTime4Graphics());
-					System.out.println(sd.toString());
+					// list for plot
+  					 System.out.println(sd.toString());
+					alldata.add(sd);
 					try {
 						// First step: Initialize the CloudSim package. It should be called
 						// before creating any entities.
