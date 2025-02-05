@@ -137,8 +137,8 @@ public class MainAppEntrust {
 					SimLogger.printLine("----------------------------------------------------------------------");
 					sd.setServiceTime(SimLogger.getInstance().getServiceTime4Graphics());
 					// list for plot
-					System.out.println(sd.toString());
-					//alldata.add(sd);
+					//System.out.println(sd.toString());
+					alldata.add(sd);
 					//	Print initial energy values
 					//SimLogger.printLine("connectivity type " + SS.getCONNECTIVITY());
 					Map<String,Double> energyValue = new HashMap<>();
@@ -160,6 +160,6 @@ public class MainAppEntrust {
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
-		//avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
+		avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
 	}
 }

@@ -18,6 +18,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChartGenerator implements IDiagrams {
     // Cartella di destinazione per il salvataggio dei grafici
@@ -129,11 +130,62 @@ public class ChartGenerator implements IDiagrams {
         generateDiagram(coordinatesById, scenarioName, orchestretorPolicy, DiagramType.MAPCHART_LOCALIZATION);
     }
 
+    @Override
+    public void generateServiceTimeChart(LinkedList<ServiceTimeDiagram> dataList) {
+        // Raggruppiamo i dati per scenario
+        Map<String, List<ServiceTimeDiagram>> groupedByScenario = dataList.stream()
+                .collect(Collectors.groupingBy(ServiceTimeDiagram::getScenarioName));
 
+        XYSeriesCollection dataset = new XYSeriesCollection();
 
+        for (Map.Entry<String, List<ServiceTimeDiagram>> entry : groupedByScenario.entrySet()) {
+            XYSeries series = new XYSeries(entry.getKey());
 
+            for (ServiceTimeDiagram data : entry.getValue()) {
+                series.add(data.getNumDevice(), data.getServiceTime());
+            }
+
+            dataset.addSeries(series);
+        }
+
+        JFreeChart lineChart = ChartFactory.createXYLineChart(
+                "Service Time vs Number of Devices",
+                "Number of Devices",
+                "Service Time",
+                dataset,
+                PlotOrientation.VERTICAL,
+                true, true, false);
+
+        XYPlot plot = lineChart.getXYPlot();
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+
+        // Assegna colori diversi a ogni serie
+        for (int i = 0; i < dataset.getSeriesCount(); i++) {
+            renderer.setSeriesPaint(i, getColor(i));
+            renderer.setSeriesStroke(i, new BasicStroke(2.0f));
+        }
+
+        plot.setRenderer(renderer);
+
+        // Creiamo la finestra per mostrare il grafico
+        JFrame frame = new JFrame("Avg service time plot");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(new ChartPanel(lineChart));
+        frame.pack();
+        frame.setVisible(true);
+
+        saveChartAsImage(lineChart, folder, 800, 600);
 
     }
+
+    private static Color getColor(int index) {
+        Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN};
+        return colors[index % colors.length]; // Cicla i colori se ci sono più serie
+    }
+    }
+
+
+
 
 
 
