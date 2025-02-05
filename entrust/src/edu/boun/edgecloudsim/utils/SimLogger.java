@@ -46,6 +46,10 @@ import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileHostEnergy
 import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
 
 public class SimLogger {
+	public Double getServiceTime4Graphics() {
+
+	}
+
 	public static enum TASK_STATUS {
 		CREATED, UPLOADING, PROCESSING, DOWNLOADING, COMLETED,
 		REJECTED_DUE_TO_VM_CAPACITY, REJECTED_DUE_TO_BANDWIDTH,

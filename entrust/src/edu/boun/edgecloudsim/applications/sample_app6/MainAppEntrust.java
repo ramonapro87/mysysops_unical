@@ -99,7 +99,7 @@ public class MainAppEntrust {
 					SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy + "_" + j + "DEVICES");
 					sd.setNumDevice(j);
 					sd.setScenarioName(simScenario);
-					sd.setServiceTime(9.9);
+					sd.setServiceTime(SimLogger.getInstance().getServiceTime4Graphics());
 					System.out.println(sd.toString());
 					try {
 						// First step: Initialize the CloudSim package. It should be called
