@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import edu.boun.edgecloudsim.core.*;
+import edu.boun.edgecloudsim.simulationvisualizer.ServiceTimeDiagram;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 
@@ -36,7 +37,7 @@ public class MainAppEntrust {
 		//disable console output of cloudsim library
 		Log.disable();
 
-
+		ServiceTimeDiagram sd= new ServiceTimeDiagram();
 		
 		//enable console output and file output of this application
 		SimLogger.enablePrintLog();
@@ -96,7 +97,10 @@ public class MainAppEntrust {
 					SimLogger.printLine("Scenario: " + simScenario + " - Policy: " + orchestratorPolicy + " - #iteration: " + iterationNumber);
 					SimLogger.printLine("Duration: " + SS.getSimulationTime() / 60 + " min (warm up period: " + SS.getWarmUpPeriod() / 60 + " min) - #devices: " + j);
 					SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy + "_" + j + "DEVICES");
-
+					sd.setNumDevice(j);
+					sd.setScenarioName(simScenario);
+					sd.setServiceTime(9.9);
+					System.out.println(sd.toString());
 					try {
 						// First step: Initialize the CloudSim package. It should be called
 						// before creating any entities.
