@@ -1,12 +1,36 @@
 package edu.boun.edgecloudsim.simulationvisualizer;
 
+import edu.boun.edgecloudsim.core.SimSettings;
+
 public class ServiceTimeDiagram {
     private String scenarioName;
     private Double serviceTime;
     private int numDevice;
 
+    private double failedTask;
+    private String nameApp;
+
+
     public ServiceTimeDiagram() {
     }
+
+    public double getFailedTask() {
+        return failedTask;
+    }
+
+    public String getNameApp() {
+        return nameApp;
+    }
+
+    public void setNameApp(String nameApp) {
+        this.nameApp = nameApp;
+    }
+
+    public void setFailedTask(double failedTask) {
+        this.failedTask = failedTask;
+    }
+
+
 
 
 

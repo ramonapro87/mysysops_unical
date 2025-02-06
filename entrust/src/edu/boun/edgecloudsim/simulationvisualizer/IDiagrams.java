@@ -2,6 +2,7 @@ package edu.boun.edgecloudsim.simulationvisualizer;
 
 import edu.boun.edgecloudsim.utils.Coordinates;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +44,10 @@ public interface IDiagrams {
     }
     public void generateMapChart(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy);
     public  void generateServiceTimeChart(LinkedList<ServiceTimeDiagram> dataList);
+    public void  createHistogramFailedTask(HashMap<String, Double> data, int networkStability);
 
     default boolean chartDisable() {
-        return false;
+        return true;
     }
 
 

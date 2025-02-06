@@ -37,6 +37,8 @@ public class MainAppEntrust {
 		Log.disable();
 		List<ServiceTimeDiagram> alldata= new LinkedList<>();
 		IDiagrams avgServiceTimePlot= new ChartGenerator();
+		IDiagrams failedTask= new ChartGenerator();
+		Map<String, Double> map4plot = new HashMap<String, Double>();
 		
 		//enable console output and file output of this application
 		SimLogger.enablePrintLog();
@@ -101,6 +103,8 @@ public class MainAppEntrust {
 					ServiceTimeDiagram sd= new ServiceTimeDiagram();
 					sd.setNumDevice(j);
 					sd.setScenarioName(simScenario);
+					map4plot.put(simScenario,SimLogger.getInstance().getPercentageFailedTask());
+					//sd.setNameApp(SimLogger.getInstance().);
 
 					try {
 						// First step: Initialize the CloudSim package. It should be called
@@ -161,5 +165,6 @@ public class MainAppEntrust {
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 		avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
+		failedTask.createHistogramFailedTask((HashMap<String, Double>) map4plot, SS.getNetStability());
 	}
 }

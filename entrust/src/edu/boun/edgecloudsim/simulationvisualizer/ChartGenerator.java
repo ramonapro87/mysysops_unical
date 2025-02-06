@@ -4,9 +4,12 @@ import edu.boun.edgecloudsim.utils.Coordinates;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -177,6 +180,47 @@ public class ChartGenerator implements IDiagrams {
         saveChartAsImage(lineChart, folder, 800, 600);
 
     }
+    public void  createHistogramFailedTask(HashMap<String, Double> data, int networkStability) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        // Aggiungi i dati all'istogramma
+        for (Map.Entry<String, Double> entry : data.entrySet()) {
+            dataset.addValue(entry.getValue(), "Failed Task", entry.getKey());
+        }
+
+
+
+        // Crea il grafico con il titolo, le etichette degli assi e i dati
+        JFreeChart chart = ChartFactory.createBarChart(
+                "Network Stability: " + networkStability,  // Titolo
+                "Scenario",                               // Etichetta asse X
+                "Failed Task %",                            // Etichetta asse Y
+                dataset,                                  // Dataset
+                org.jfree.chart.plot.PlotOrientation.VERTICAL, // Orientamento
+                false,                                    // Disabilita la legenda
+                true,                                     // Include tooltips
+                false                                     // Include URL
+        );
+            chart.removeLegend();
+
+        // Ottieni il plot e il renderer per modificare il colore delle barre
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+
+        // Imposta il colore delle barre su grigio
+        renderer.setSeriesPaint(0, Color.GRAY); // Modifica il colore della serie 0 (la prima serie)
+        // Imposta la larghezza delle barre
+        renderer.setItemMargin(0.5); // Aumenta il margine tra le barre per farle più sottili
+
+
+        saveChartAsImage(chart, folder, 800, 600);
+
+    }
+
+
+
+
+
 
     private static Color getColor(int index) {
         Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN};

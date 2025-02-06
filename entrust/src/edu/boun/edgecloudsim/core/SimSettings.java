@@ -151,6 +151,7 @@ public class SimSettings {
 	private double CELLULARDEVICERECEPTIONWATTHOURPERBIT;
 	private double CELLULARBASESTATIONWATTHOURPERBITUPLINK;
 	private double CELLULARBASESTATIONWATTHOURPERBITDOWNLINK;
+
 	
 
 	// mean waiting time (minute) is stored for each place types
@@ -325,7 +326,7 @@ public class SimSettings {
 			BANDWITH_MAN = 1000 * Integer.parseInt(prop.getProperty("man_bandwidth", "0"));
 			BANDWITH_WAN = 1000 * Integer.parseInt(prop.getProperty("wan_bandwidth", "0"));
 			BANDWITH_GSM =  1000 * Integer.parseInt(prop.getProperty("gsm_bandwidth", "0"));
-			
+
 			NET_STABILITY =  Integer.parseInt(prop.getProperty("net_stability", "100"));
 
 
@@ -538,6 +539,10 @@ public class SimSettings {
 	public int getWlanRange()
 	{
 		return WLAN_RANGE;
+	}
+
+	public int getNetStability(){
+		return NET_STABILITY;
 	}
 
 	/**
