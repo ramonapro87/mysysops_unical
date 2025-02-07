@@ -7,16 +7,23 @@ public class ServiceTimeDiagram {
     private Double serviceTime;
     private int numDevice;
 
-    private double failedTask;
-    private String nameApp;
 
+   // private double failedTask;
+    private String nameApp;
+    private Double avgSpentEnergy;
+
+    public Double getAvgSpentEnergy() {
+        return avgSpentEnergy;
+    }
+
+    public void setAvgSpentEnergy(Double avgSpentEnergy) {
+        this.avgSpentEnergy = avgSpentEnergy;
+    }
 
     public ServiceTimeDiagram() {
     }
 
-    public double getFailedTask() {
-        return failedTask;
-    }
+
 
     public String getNameApp() {
         return nameApp;
@@ -26,9 +33,7 @@ public class ServiceTimeDiagram {
         this.nameApp = nameApp;
     }
 
-    public void setFailedTask(double failedTask) {
-        this.failedTask = failedTask;
-    }
+
 
 
 
@@ -64,6 +69,8 @@ public class ServiceTimeDiagram {
                 "scenarioName='" + scenarioName + '\'' +
                 ", serviceTime=" + serviceTime +
                 ", numDevice=" + numDevice +
+                ", nameApp='" + nameApp + '\'' +
+                ", avgSpentEnergy=" + avgSpentEnergy +
                 '}';
     }
 }

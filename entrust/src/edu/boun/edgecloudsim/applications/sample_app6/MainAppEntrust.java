@@ -88,6 +88,7 @@ public class MainAppEntrust {
 			SS.generateMobileConfig(j); //Random setup of mobile devices
 			//End of orchestrators loop
 			for(int k=0; k<SS.getSimulationScenarios().length; k++)
+
 				for (int i = 0; i < SS.getOrchestratorPolicies().length; i++) {
 					
 					String simScenario = SS.getSimulationScenarios()[k];
@@ -100,11 +101,17 @@ public class MainAppEntrust {
 					SimLogger.printLine("Duration: " + SS.getSimulationTime() / 60 + " min (warm up period: " + SS.getWarmUpPeriod() / 60 + " min) - #devices: " + j);
 					SimLogger.getInstance().simStarted(outputFolder, "SIMRESULT_" + simScenario + "_" + orchestratorPolicy + "_" + j + "DEVICES");
 					//data for plots
+
+//dati per grafico
 					ServiceTimeDiagram sd= new ServiceTimeDiagram();
+					//sd.setNameApp(SS.getAppName());
 					sd.setNumDevice(j);
 					sd.setScenarioName(simScenario);
 					map4plot.put(simScenario,SimLogger.getInstance().getPercentageFailedTask());
 					//sd.setNameApp(SimLogger.getInstance().);
+					//sd.setAvgSpentEnergy(SS.getEnergyConsumpitonMax_mobile());
+					//sd.setNameApp(SS.getTaskName());
+					//System.out.println(sd.toString());
 
 					try {
 						// First step: Initialize the CloudSim package. It should be called
@@ -124,8 +131,12 @@ public class MainAppEntrust {
 
 						manager = new SimManagerEnergy(sampleFactory, j, simScenario, orchestratorPolicy);
 
+
 						// Start simulation
 						manager.startSimulation();
+
+
+
 					} catch (Exception e) {
 						SimLogger.printLine("The simulation has been terminated due to an unexpected error");
 						e.printStackTrace();
@@ -137,6 +148,7 @@ public class MainAppEntrust {
 					now = df.format(ScenarioEndDate);
 
 
+					sd.toString();
 					SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
 					SimLogger.printLine("----------------------------------------------------------------------");
 					sd.setServiceTime(SimLogger.getInstance().getServiceTime4Graphics());
@@ -166,5 +178,6 @@ public class MainAppEntrust {
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 		avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
 		failedTask.createHistogramFailedTask((HashMap<String, Double>) map4plot, SS.getNetStability());
+
 	}
 }

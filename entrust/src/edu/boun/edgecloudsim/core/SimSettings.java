@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -698,6 +700,14 @@ public class SimSettings {
 		return WESTERN_BOUND;
 	}
 
+	public List<String> testNameApp = new LinkedList<>();
+	public List<String>getNamesApp(){
+		return testNameApp;
+	}
+	private String nameApp="";
+	public String getAppName(){
+		return nameApp;
+	}
 
 	//energy
 	public double getEnergyConsumpitonMax_cloud(){return ENERGYCONSUMPTIONMAX_CLOUD;}
@@ -851,6 +861,8 @@ public class SimSettings {
 				isAttributePresent(appElement, "name");
 				String taskName = appElement.getAttribute("name");
 				taskNames[i] = taskName;
+				nameApp= taskName; //todo better this
+				this.testNameApp.add(nameApp);
 
 				for(int m=0; m<mandatoryAttributes.length; m++){
 					isElementPresent(appElement, mandatoryAttributes[m]);
