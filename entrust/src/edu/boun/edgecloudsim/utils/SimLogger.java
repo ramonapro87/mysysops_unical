@@ -48,10 +48,12 @@ import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
 public class SimLogger {
 
     public double getGraphicsEnergyMobile() {
-        return graphicsEnergyMobile;
+        return graphicsEnergyMobile+ graphicsEnergyMobile ;
     }
 
     private double graphicsEnergyMobile = 0;
+    private double graphicsEnergyEdge=0;
+
 
 
 
@@ -883,7 +885,7 @@ public class SimLogger {
 
 
         if (totalEnergyConsumedOnMobile != 0) {
-            //todo crapa ramona
+            //todo ramona
             graphicsEnergyMobile = totalEnergyConsumedOnMobile /
                     (double) vmLoadList.stream().filter(x -> x.getEnergyConsumedOnMobile() != 0).toList().size();
             printLine("average energy consumption on Mobile: "
@@ -891,6 +893,8 @@ public class SimLogger {
         }
 
         if (totalEnergyConsumedOnEDGE != 0) {
+            graphicsEnergyEdge=totalEnergyConsumedOnEDGE /
+                    (double) vmLoadList.stream().filter(x -> x.getEnergyConsumptionOnEdge() != 0).toList().size();
             printLine("average energy consumption on **********EDGE: "
                     + String.format("%.6f", totalEnergyConsumedOnEDGE /
                     (double) vmLoadList.stream().filter(x -> x.getEnergyConsumptionOnEdge() != 0).toList().size()) + " [Wh]"); // consideriamo solo le VM che hanno consumato energia
