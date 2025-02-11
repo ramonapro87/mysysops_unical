@@ -115,7 +115,9 @@ public class SimManagerEnergy extends SimManager {
 //    		System.out.println("DOWNLOAD");
     		size = task.getCloudletOutputSize();
     	}
-    	    	
+    	
+    	size = size * 1024 * 8; // conversion bit -> Kbyte
+    		
 		int nexthop = getEdgeOrchestrator().getDeviceToOffload(task);    					    					
 			    					
 		int mobileid = task.getMobileDeviceId();
