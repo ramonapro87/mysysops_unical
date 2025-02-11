@@ -47,11 +47,21 @@ import edu.boun.edgecloudsim.utils.SimLogger.NETWORK_ERRORS;
 
 public class SimLogger {
 
+    public double getGraphicsEnergyMobile() {
+        return graphicsEnergyMobile;
+    }
+
+    private double graphicsEnergyMobile = 0;
+
+
+
+
     double percentageFailedTask = 0;
 
     public double getPercentageFailedTask() {
         return percentageFailedTask;
     }
+
 
     public Double getServiceTime4Graphics() {
         return serviceTime[numOfAppTypes] / (double) completedTask[numOfAppTypes];
@@ -871,13 +881,13 @@ public class SimLogger {
                 + String.format("%.6f", totalVmLoadOnCloud / (double) vmLoadList.size()) + "/"
                 + String.format("%.6f", totalVmLoadOnMobile / (double) vmLoadList.size()));
 
-        /**
-         * sample output: average energy consumption on Mobile
-         * */
+
         if (totalEnergyConsumedOnMobile != 0) {
+            //todo crapa ramona
+            graphicsEnergyMobile = totalEnergyConsumedOnMobile /
+                    (double) vmLoadList.stream().filter(x -> x.getEnergyConsumedOnMobile() != 0).toList().size();
             printLine("average energy consumption on Mobile: "
-                    + String.format("%.6f", totalEnergyConsumedOnMobile /
-                    (double) vmLoadList.stream().filter(x -> x.getEnergyConsumedOnMobile() != 0).toList().size()) + " [Wh]"); // consideriamo solo le VM che hanno consumato energia
+                    + String.format("%.6f", graphicsEnergyMobile) + " [Wh]"); // consideriamo solo le VM che hanno consumato energia
         }
 
         if (totalEnergyConsumedOnEDGE != 0) {
@@ -1085,7 +1095,7 @@ class VmLoadLogItem {
     // i valori sotto servono solo per l energia consumata
     private double energyConsumptionOnEdge;
     private double energyConsumptionOnCloud;
-    private double energyConsumptionOnMobile;
+    public double energyConsumptionOnMobile;
 
     VmLoadLogItem(double _time, double _vmLoadOnEdge, double _vmLoadOnCloud, double _vmLoadOnMobile) {
         time = _time;

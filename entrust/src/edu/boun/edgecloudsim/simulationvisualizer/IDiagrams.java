@@ -45,6 +45,8 @@ public interface IDiagrams {
     public void generateMapChart(Map<Integer, List<Coordinates>> coordinatesById, String scenarioName, String orchestretorPolicy);
     public  void generateServiceTimeChart(LinkedList<ServiceTimeDiagram> dataList);
     public void  createHistogramFailedTask(HashMap<String, Double> data, int networkStability);
+    public void generateEnergyForApp(LinkedList<ServiceTimeDiagram> dataList);
+
 
     default boolean chartDisable() {
         return true;

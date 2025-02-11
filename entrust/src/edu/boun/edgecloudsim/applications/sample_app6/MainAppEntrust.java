@@ -38,6 +38,7 @@ public class MainAppEntrust {
 		List<ServiceTimeDiagram> alldata= new LinkedList<>();
 		IDiagrams avgServiceTimePlot= new ChartGenerator();
 		IDiagrams failedTask= new ChartGenerator();
+		IDiagrams spentEnergy= new ChartGenerator();
 		Map<String, Double> map4plot = new HashMap<String, Double>();
 		
 		//enable console output and file output of this application
@@ -104,14 +105,12 @@ public class MainAppEntrust {
 
 //dati per grafico
 					ServiceTimeDiagram sd= new ServiceTimeDiagram();
-					//sd.setNameApp(SS.getAppName());
+					sd.setNameApp(SS.getAppName());
 					sd.setNumDevice(j);
 					sd.setScenarioName(simScenario);
 					map4plot.put(simScenario,SimLogger.getInstance().getPercentageFailedTask());
 					//sd.setNameApp(SimLogger.getInstance().);
-					//sd.setAvgSpentEnergy(SS.getEnergyConsumpitonMax_mobile());
-					//sd.setNameApp(SS.getTaskName());
-					//System.out.println(sd.toString());
+
 
 					try {
 						// First step: Initialize the CloudSim package. It should be called
@@ -137,6 +136,7 @@ public class MainAppEntrust {
 
 
 
+
 					} catch (Exception e) {
 						SimLogger.printLine("The simulation has been terminated due to an unexpected error");
 						e.printStackTrace();
@@ -148,28 +148,36 @@ public class MainAppEntrust {
 					now = df.format(ScenarioEndDate);
 
 
-					sd.toString();
+
 					SimLogger.printLine("Scenario finished at " + now + ". It took " + SimUtils.getTimeDifference(ScenarioStartDate, ScenarioEndDate));
 					SimLogger.printLine("----------------------------------------------------------------------");
 					sd.setServiceTime(SimLogger.getInstance().getServiceTime4Graphics());
 					// list for plot
 					//System.out.println(sd.toString());
-					alldata.add(sd);
+
+
+
 					//	Print initial energy values
 					//SimLogger.printLine("connectivity type " + SS.getCONNECTIVITY());
-					Map<String,Double> energyValue = new HashMap<>();
+					//Map<String,Double> energyValue = new HashMap<>();
 
-					energyValue.put("BATTERYCAPACITY",SS.getBATTERYCAPACITY());
-					energyValue.put("ENERGYCONSUMPTIONMAX_MOBILE",SS.getEnergyConsumpitonMax_mobile());
-					energyValue.put("ENERGYCONSUMPTIONIDLE_MOBILE",SS.getEnergyConsumptionIdle_mobile());
+					//energyValue.put("BATTERYCAPACITY",SS.getBATTERYCAPACITY());
+					//energyValue.put("ENERGYCONSUMPTIONMAX_MOBILE",SS.getEnergyConsumpitonMax_mobile());
+					//energyValue.put("ENERGYCONSUMPTIONIDLE_MOBILE",SS.getEnergyConsumptionIdle_mobile());
 
-					energyValue.entrySet().stream()
-							.map(eValue->eValue.getKey() + " : "+eValue.getValue())
-							.forEach(SimLogger::printLine);
+					//energyValue.entrySet().stream()
+						//	.map(eValue->eValue.getKey() + " : "+eValue.getValue())
+							//.forEach(SimLogger::printLine);
 
+					sd.setAvgSpentEnergy(SimLogger.getInstance().getGraphicsEnergyMobile());
 
+					alldata.add(sd);
+
+					//System.out.println(sd.toString());
 
 			}//End of scenarios loop
+
+
 		}//End of mobile devices loop
 
 
@@ -177,7 +185,9 @@ public class MainAppEntrust {
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 		avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
-		failedTask.createHistogramFailedTask((HashMap<String, Double>) map4plot, SS.getNetStability());
+		//failedTask.createHistogramFailedTask((HashMap<String, Double>) map4plot, SS.getNetStability());
+		//spentEnergy.generateEnergyForApp((LinkedList<ServiceTimeDiagram>) alldata);
+
 
 	}
 }

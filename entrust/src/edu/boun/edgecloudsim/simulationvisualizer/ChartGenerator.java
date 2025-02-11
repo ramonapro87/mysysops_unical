@@ -9,9 +9,11 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleEdge;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,7 +64,7 @@ public class ChartGenerator implements IDiagrams {
             // Imposta i titoli degli assi in base al tipo di diagramma
             if (diagramType == DiagramType.ENERGY_VS_TIME) {
                 xAxisLabel = "Time";
-                yAxisLabel = "Energy Consumed";
+                yAxisLabel = "Energy Consumed Wh";
             } else if (diagramType == DiagramType.MAPCHART_LOCALIZATION) {
                 xAxisLabel = "Coordinate X";
                 yAxisLabel = "Coordinate Y";
@@ -154,10 +156,12 @@ public class ChartGenerator implements IDiagrams {
         JFreeChart lineChart = ChartFactory.createXYLineChart(
                 "Service Time vs Number of Devices",
                 "Number of Devices",
-                "Service Time",
+                "Service Time [s]",
                 dataset,
                 PlotOrientation.VERTICAL,
                 true, true, false);
+
+
 
         XYPlot plot = lineChart.getXYPlot();
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
@@ -176,6 +180,7 @@ public class ChartGenerator implements IDiagrams {
         frame.add(new ChartPanel(lineChart));
         frame.pack();
         frame.setVisible(true);
+
 
         saveChartAsImage(lineChart, folder, 800, 600);
 
@@ -216,6 +221,46 @@ public class ChartGenerator implements IDiagrams {
         saveChartAsImage(chart, folder, 800, 600);
 
     }
+
+
+    public void generateEnergyForApp(LinkedList<ServiceTimeDiagram> data) {
+        // Creazione del dataset per l'istogramma
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        // Aggiungiamo i valori di energia media spesa al dataset
+        for (ServiceTimeDiagram diagram : data) {
+            dataset.addValue(diagram.getAvgSpentEnergy(), "Energy Spent Wh", diagram.getScenarioName());
+        }
+
+        // Creazione del grafico
+        JFreeChart chart = ChartFactory.createBarChart(
+                data.getFirst().getNameApp(),               // Titolo del grafico
+                "Scenario",                                // Etichetta dell'asse delle X (scenari)
+                "Average Spent Energy [Wh]",                    // Etichetta dell'asse delle Y (energia spesa media)
+                dataset,                                   // Dataset
+                PlotOrientation.VERTICAL,                  // Orientamento del grafico
+                false,                                     // Legenda
+                true,                                      // Tooltips
+                false                                      // URLs
+        );
+
+        // Mostra il grafico in una finestra
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(800, 600));
+        JFrame frame = new JFrame("Energy for App");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.getContentPane().add(chartPanel);
+        frame.pack();
+        frame.setVisible(true);
+
+        // Salva il grafico come immagine
+        saveChartAsImage(chart, folder, 800, 600);
+    }
+
+
+
+
+
 
 
 

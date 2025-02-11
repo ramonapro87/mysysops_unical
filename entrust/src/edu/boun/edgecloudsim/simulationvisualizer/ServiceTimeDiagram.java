@@ -1,7 +1,5 @@
 package edu.boun.edgecloudsim.simulationvisualizer;
 
-import edu.boun.edgecloudsim.core.SimSettings;
-
 public class ServiceTimeDiagram {
     private String scenarioName;
     private Double serviceTime;
@@ -13,7 +11,7 @@ public class ServiceTimeDiagram {
     private Double avgSpentEnergy;
 
     public Double getAvgSpentEnergy() {
-        return avgSpentEnergy;
+        return  avgSpentEnergy;
     }
 
     public void setAvgSpentEnergy(Double avgSpentEnergy) {
