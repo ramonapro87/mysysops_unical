@@ -1,9 +1,18 @@
 package edu.boun.edgecloudsim.simulationvisualizer;
 
+import org.knowm.xchart.*;
+import org.knowm.xchart.style.markers.SeriesMarkers;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 import edu.boun.edgecloudsim.utils.Coordinates;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
+import org.jfree.chart.*;
+import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -13,13 +22,15 @@ import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.HorizontalAlignment;
+import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import javax.swing.border.LineBorder;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
@@ -137,54 +148,80 @@ public class ChartGenerator implements IDiagrams {
 
     @Override
     public void generateServiceTimeChart(LinkedList<ServiceTimeDiagram> dataList) {
+        if (dataList == null || dataList.isEmpty()) {
+            System.out.println("No data available to plot.");
+            return;
+        }
+
+        // Prendiamo il nome dell'applicazione dalla prima entry
+        String appname = dataList.getFirst().getNameApp();
+
         // Raggruppiamo i dati per scenario
         Map<String, List<ServiceTimeDiagram>> groupedByScenario = dataList.stream()
                 .collect(Collectors.groupingBy(ServiceTimeDiagram::getScenarioName));
 
-        XYSeriesCollection dataset = new XYSeriesCollection();
+        // Creiamo il grafico
+        XYChart chart = new XYChartBuilder()
+                .width(800)
+                .height(600)
+                .title(appname)
+                .xAxisTitle("Number of Devices")
+                .yAxisTitle("Service Time [s]")
+                .build();
 
+        chart.getStyler().setLegendPosition(org.knowm.xchart.style.Styler.LegendPosition.OutsideS); // Legenda fuori
+        chart.getStyler().setMarkerSize(6);
+
+        System.out.println("DEBUG: Generazione dataset:");
+
+        // Aggiungiamo le serie al grafico
         for (Map.Entry<String, List<ServiceTimeDiagram>> entry : groupedByScenario.entrySet()) {
-            XYSeries series = new XYSeries(entry.getKey());
+            String scenarioName = entry.getKey();
+            List<ServiceTimeDiagram> values = entry.getValue();
 
-            for (ServiceTimeDiagram data : entry.getValue()) {
-                series.add(data.getNumDevice(), data.getServiceTime());
-            }
+            double[] xData = values.stream().mapToDouble(ServiceTimeDiagram::getNumDevice).toArray();
+            double[] yData = values.stream().mapToDouble(ServiceTimeDiagram::getServiceTime).toArray();
 
-            dataset.addSeries(series);
+            org.knowm.xchart.XYSeries series = chart.addSeries(scenarioName, xData, yData);
+            series.setMarker(SeriesMarkers.CIRCLE);
         }
 
-        JFreeChart lineChart = ChartFactory.createXYLineChart(
-                "Service Time vs Number of Devices",
-                "Number of Devices",
-                "Service Time [s]",
-                dataset,
-                PlotOrientation.VERTICAL,
-                true, true, false);
+        // Mostriamo il grafico in una finestra
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Avg Service Time Plot");
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            JPanel chartPanel = new XChartPanel<>(chart);
+            frame.add(chartPanel);
+            frame.pack();
+            frame.setVisible(true);
+        });
 
-
-
-        XYPlot plot = lineChart.getXYPlot();
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-
-        // Assegna colori diversi a ogni serie
-        for (int i = 0; i < dataset.getSeriesCount(); i++) {
-            renderer.setSeriesPaint(i, getColor(i));
-            renderer.setSeriesStroke(i, new BasicStroke(2.0f));
-        }
-
-        plot.setRenderer(renderer);
-
-        // Creiamo la finestra per mostrare il grafico
-        JFrame frame = new JFrame("Avg service time plot");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(new ChartPanel(lineChart));
-        frame.pack();
-        frame.setVisible(true);
-
-
-        saveChartAsImage(lineChart, folder, 800, 600);
-
+        // Salviamo il grafico come immagine
+        saveChartAsImage(chart, folder, "chartservicetime.png");
     }
+
+    private void saveChartAsImage(XYChart chart, String folder, String filename) {
+        try {
+            // Generiamo una stringa casuale (UUID)
+            String randomString = UUID.randomUUID().toString().substring(0, 8); // Prendiamo solo i primi 8 caratteri
+
+            // Creiamo il nuovo nome file con la stringa casuale
+            String newFilename = filename.replace(".png", "") + "_" + randomString + ".png";
+
+            // Percorso completo del file
+            Path outputPath = Paths.get(folder, newFilename);
+
+            // Salviamo l'immagine
+            BitmapEncoder.saveBitmap(chart, outputPath.toString(), BitmapEncoder.BitmapFormat.PNG);
+
+            System.out.println("Grafico salvato in: " + outputPath.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Errore nel salvataggio dell'immagine: " + e.getMessage());
+        }
+    }
+
+
+
     public void  createHistogramFailedTask(HashMap<String, Double> data, int networkStability) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
