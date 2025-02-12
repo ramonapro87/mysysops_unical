@@ -16,9 +16,9 @@
 		<vm_utilization_on_cloud>2</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>50</vm_utilization_on_mobile>
 	</application>
--->
+
 <application name="HEALTHY_APP">
-		<usage_percentage>30</usage_percentage>
+		<usage_percentage>100</usage_percentage>
 		<prob_cloud_selection>20</prob_cloud_selection>
 		<poisson_interarrival>30</poisson_interarrival>
 		<delay_sensitivity>0</delay_sensitivity>
@@ -32,9 +32,9 @@
 		<vm_utilization_on_cloud>0.5</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>50</vm_utilization_on_mobile>
 	</application>
-<!--
+-->
 	<application name="ECG">
-		<usage_percentage>30</usage_percentage>
+		<usage_percentage>100</usage_percentage>
 		<prob_cloud_selection>40</prob_cloud_selection>
 		<poisson_interarrival>60</poisson_interarrival>
 		<delay_sensitivity>0</delay_sensitivity>

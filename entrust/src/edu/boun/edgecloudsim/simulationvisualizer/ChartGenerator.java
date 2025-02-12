@@ -1,6 +1,7 @@
 package edu.boun.edgecloudsim.simulationvisualizer;
 
 import org.knowm.xchart.*;
+import org.knowm.xchart.style.Styler;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
 import javax.swing.*;
@@ -169,7 +170,9 @@ public class ChartGenerator implements IDiagrams {
                 .yAxisTitle("Service Time [s]")
                 .build();
 
-        chart.getStyler().setLegendPosition(org.knowm.xchart.style.Styler.LegendPosition.OutsideS); // Legenda fuori
+        // Stili della leggenda
+        chart.getStyler().setLegendPosition(Styler.LegendPosition.OutsideS); // Legenda sotto
+        chart.getStyler().setLegendLayout(Styler.LegendLayout.Horizontal); // Legenda su UNA SOLA riga
         chart.getStyler().setMarkerSize(6);
 
         System.out.println("DEBUG: Generazione dataset:");
@@ -197,7 +200,7 @@ public class ChartGenerator implements IDiagrams {
         });
 
         // Salviamo il grafico come immagine
-        saveChartAsImage(chart, folder, "chartservicetime.png");
+        saveChartAsImage(chart, folder, "chart.png");
     }
 
     private void saveChartAsImage(XYChart chart, String folder, String filename) {
