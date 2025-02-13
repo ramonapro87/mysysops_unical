@@ -46,7 +46,7 @@ public interface IDiagrams {
     public  void generateServiceTimeChart(LinkedList<ServiceTimeDiagram> dataList);
     public void  createHistogramFailedTask(HashMap<String, Double> data, int networkStability);
     public void generateEnergyForApp(LinkedList<ServiceTimeDiagram> dataList);
-
+    public void generateEnergyConsumptionDiagram(List<ServiceTimeDiagram> diagramData);
 
     default boolean chartDisable() {
         return true;
