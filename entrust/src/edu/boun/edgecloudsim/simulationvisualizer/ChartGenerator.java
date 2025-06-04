@@ -92,7 +92,10 @@ public class ChartGenerator implements IDiagrams {
 
             // Mostra il grafico in una finestra
             SwingUtilities.invokeLater(() -> {
-                String title = scenarioName + " - " + orchestretorPolicy;
+                //
+                // String title = scenarioName + " - " + orchestretorPolicy;
+                String title = scenarioName + " - " + orchestretorPolicy ;
+
                 JFrame frame = new JFrame(title);
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.getContentPane().add(new ChartPanel(chart));
@@ -111,6 +114,10 @@ public class ChartGenerator implements IDiagrams {
 
             // Salva il grafico come immagine
             saveChartAsImage(chart, folder, 800, 600);
+            // Salva il grafico come immagine
+          //  String title=scenarioName+ "   "+ orchestretorPolicy;
+          //  saveChartAsImage(chart, folder, 800, 600, title);
+
 
             System.out.println("Grafico generato con successo.");
         } catch (Exception e) {
@@ -118,6 +125,33 @@ public class ChartGenerator implements IDiagrams {
             e.printStackTrace();
         }
     }
+    private void saveChartAsImage(JFreeChart chart, String filePath, int width, int height, String chartTitle) {
+        // Usa il titolo del grafico nel nome del file
+        String uuid = UUID.randomUUID().toString();
+        String fileName = filePath + "/" + chartTitle.replaceAll("[^a-zA-Z0-9]", "_") + "_File_" + uuid + ".png";
+
+        File outputFile = new File(fileName);
+
+        // Creazione di un ChartPanel che contiene il grafico, includendo il titolo
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setPreferredSize(new java.awt.Dimension(width, height));
+
+        // Renderizza il grafico in un'immagine
+        BufferedImage chartImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = chartImage.createGraphics();
+        chartPanel.paint(g2d);  // Disegna il grafico nel BufferedImage
+        g2d.dispose();
+
+        // Salva l'immagine come PNG
+        try {
+            ImageIO.write(chartImage, "png", outputFile);
+            System.out.println("File salvato come immagine: " + fileName);
+        } catch (IOException e) {
+            System.err.println("Errore nel salvataggio del file: " + e.getMessage());
+        }
+    }
+
+
 
     // Metodo per salvare il grafico come immagine
     private void saveChartAsImage(JFreeChart chart, String filePath, int width, int height) {
@@ -311,7 +345,69 @@ public class ChartGenerator implements IDiagrams {
         Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE, Color.MAGENTA, Color.CYAN};
         return colors[index % colors.length]; // Cicla i colori se ci sono più serie
     }
+
+    public void generateEnergyConsumptionDiagram(List<ServiceTimeDiagram> diagramData) {
+        try {
+            // Crea un dataset per il grafico
+            XYSeriesCollection dataset = new XYSeriesCollection();
+
+            // Mappa per raccogliere i dati per ogni scenario
+            Map<String, XYSeries> scenarioSeriesMap = new HashMap<>();
+
+            // Crea una serie per ogni scenario
+            for (ServiceTimeDiagram diagram : diagramData) {
+                String scenario = diagram.getScenarioName();
+                // Se non esiste ancora una serie per questo scenario, la creiamo
+                if (!scenarioSeriesMap.containsKey(scenario)) {
+                    scenarioSeriesMap.put(scenario, new XYSeries(scenario));
+                }
+                // Aggiungiamo il dato (numDevice, avgSpentEnergy) alla serie corretta
+                XYSeries series = scenarioSeriesMap.get(scenario);
+                series.add(diagram.getNumDevice(), diagram.getAvgSpentEnergy());
+            }
+
+            // Aggiungi tutte le serie al dataset
+            for (XYSeries series : scenarioSeriesMap.values()) {
+                dataset.addSeries(series);
+            }
+
+            // Impostazione dei titoli degli assi
+            String xAxisLabel = "Number of Devices";
+            String yAxisLabel = "Average Spent Energy (Wh)";
+
+            // Crea il grafico a linee
+            JFreeChart chart = ChartFactory.createXYLineChart(
+                    "Energy Consumption vs. Number of Devices", // Titolo del grafico
+                    xAxisLabel, // Titolo asse X
+                    yAxisLabel, // Titolo asse Y
+                    dataset, // Dati del grafico
+                    PlotOrientation.VERTICAL, // Orientamento
+                    true, // Legenda
+                    true, // Tooltip
+                    false // URL
+            );
+
+            // Mostra il grafico in una finestra
+            SwingUtilities.invokeLater(() -> {
+                JFrame frame = new JFrame("Energy Consumption Diagram");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.getContentPane().add(new ChartPanel(chart));
+                frame.pack();
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            });
+
+            // Salva il grafico come immagine
+            saveChartAsImage(chart, folder, 800, 600);
+
+        } catch (Exception e) {
+            System.out.println("Errore nella generazione del grafico:");
+            e.printStackTrace();
+        }
     }
+
+
+}
 
 
 

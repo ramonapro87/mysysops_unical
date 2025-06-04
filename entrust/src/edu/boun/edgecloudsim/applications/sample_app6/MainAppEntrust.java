@@ -109,6 +109,7 @@ public class MainAppEntrust {
 					sd.setNumDevice(j);
 					sd.setScenarioName(simScenario);
 					map4plot.put(simScenario,SimLogger.getInstance().getPercentageFailedTask());
+					//sd.setAvgSpentEnergy();
 					//sd.setNameApp(SimLogger.getInstance().);
 
 
@@ -134,7 +135,9 @@ public class MainAppEntrust {
 						// Start simulation
 						manager.startSimulation();
 
+						sd.setAvgSpentEnergy(SimLogger.getInstance().getGraphicsEnergyMobile());
 
+						alldata.add(sd);
 
 
 					} catch (Exception e) {
@@ -169,9 +172,9 @@ public class MainAppEntrust {
 						//	.map(eValue->eValue.getKey() + " : "+eValue.getValue())
 							//.forEach(SimLogger::printLine);
 
-					sd.setAvgSpentEnergy(SimLogger.getInstance().getGraphicsEnergyMobile());
+					//sd.setAvgSpentEnergy(SimLogger.getInstance().getGraphicsEnergyMobile());
 
-					alldata.add(sd);
+					//alldata.add(sd);
 
 					//System.out.println(sd.toString());
 
@@ -184,10 +187,10 @@ public class MainAppEntrust {
 		Date SimulationEndDate = Calendar.getInstance().getTime();
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
-		avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
+		//avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
 		//failedTask.createHistogramFailedTask((HashMap<String, Double>) map4plot, SS.getNetStability());
 		//spentEnergy.generateEnergyForApp((LinkedList<ServiceTimeDiagram>) alldata);
-
+        spentEnergy.generateEnergyConsumptionDiagram(alldata);
 
 	}
 }
