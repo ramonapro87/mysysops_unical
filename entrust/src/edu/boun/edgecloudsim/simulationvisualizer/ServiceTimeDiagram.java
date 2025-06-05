@@ -5,10 +5,35 @@ public class ServiceTimeDiagram {
     private Double serviceTime;
     private int numDevice;
 
-
-   // private double failedTask;
     private String nameApp;
     private Double avgSpentEnergy;
+    private int  numtaskonedge;
+    private int numtaskonMobile;
+    private int numtaskoncloud;
+
+    public int getNumtaskoncloud() {
+        return numtaskoncloud;
+    }
+
+    public void setNumtaskoncloud(int numtaskoncloud) {
+        this.numtaskoncloud = numtaskoncloud;
+    }
+
+    public int getNumtaskonMobile() {
+        return numtaskonMobile;
+    }
+
+    public void setNumtaskonedge(int numtaskonedge) {
+        this.numtaskonedge = numtaskonedge;
+    }
+
+    public void setNumtaskonMobile(int numtaskonMobile) {
+        this.numtaskonMobile = numtaskonMobile;
+    }
+
+    public int getNumtaskonedge() {
+        return numtaskonedge;
+    }
 
     public Double getAvgSpentEnergy() {
         return  avgSpentEnergy;
@@ -69,6 +94,9 @@ public class ServiceTimeDiagram {
                 ", numDevice=" + numDevice +
                 ", nameApp='" + nameApp + '\'' +
                 ", avgSpentEnergy=" + avgSpentEnergy +
+                ", numtaskonedge=" + numtaskonedge +
+                ", numtaskonMobile=" + numtaskonMobile +
+                ", numtaskoncloud=" + numtaskoncloud +
                 '}';
     }
 }

@@ -54,9 +54,22 @@ public class SimLogger {
     private double graphicsEnergyMobile = 0;
     private double graphicsEnergyEdge=0;
 
+    public int getCompletedtaskonmobile() {
+        return completedtaskonmobile;
+    }
 
+    private int completedtaskonmobile=0;
 
+    public int getCompletetdtaskonedge() {
+        return completetdtaskonedge;
+    }
 
+    private int completetdtaskonedge=0;
+    private int completedtaskoncloud=0;
+
+    public int getCompletedtaskoncloud() {
+        return completedtaskoncloud;
+    }
 
     double percentageFailedTask = 0;
 
@@ -801,7 +814,9 @@ public class SimLogger {
                 + failedTaskOnEdge[numOfAppTypes] + "/"
                 + failedTaskOnCloud[numOfAppTypes] + "/"
                 + failedTaskOnMobile[numOfAppTypes] + ")");
-
+     completedtaskonmobile=completedTaskOnMobile[numOfAppTypes];
+     completedtaskoncloud=completedTaskOnCloud[numOfAppTypes];
+     completetdtaskonedge=completedTaskOnEdge[numOfAppTypes];
         printLine("# of completed tasks (Edge/Cloud/Mobile): "
                 + completedTask[numOfAppTypes] + "("
                 + completedTaskOnEdge[numOfAppTypes] + "/"

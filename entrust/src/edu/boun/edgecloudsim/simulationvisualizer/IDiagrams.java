@@ -53,4 +53,5 @@ public interface IDiagrams {
     }
 
 
+  public  void generateCompletedTaskPlot(List<ServiceTimeDiagram> alldata);
 }

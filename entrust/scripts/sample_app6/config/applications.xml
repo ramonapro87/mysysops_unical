@@ -17,6 +17,7 @@
 	<vm_utilization_on_mobile>10</vm_utilization_on_mobile>
 </application>
 -->
+
 <application name="BLOOD_MONITORING">
 		<usage_percentage>40</usage_percentage>
 		<prob_cloud_selection>20</prob_cloud_selection>
@@ -32,7 +33,7 @@
 		<vm_utilization_on_cloud>2</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>50</vm_utilization_on_mobile>
 	</application>
-
+-->
 <application name="HEALTHY_APP">
 		<usage_percentage>30</usage_percentage>
 		<prob_cloud_selection>20</prob_cloud_selection>
@@ -64,5 +65,4 @@
 		<vm_utilization_on_cloud>3</vm_utilization_on_cloud>
 		<vm_utilization_on_mobile>50</vm_utilization_on_mobile>
 	</application>
--->
 </applications>

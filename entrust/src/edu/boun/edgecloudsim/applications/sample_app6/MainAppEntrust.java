@@ -136,10 +136,13 @@ public class MainAppEntrust {
 						manager.startSimulation();
 
 						sd.setAvgSpentEnergy(SimLogger.getInstance().getGraphicsEnergyMobile());
+						sd.setNumtaskoncloud(SimLogger.getInstance().getCompletedtaskoncloud());
+						sd.setNumtaskonedge(SimLogger.getInstance().getCompletetdtaskonedge());
+						sd.setNumtaskonMobile(SimLogger.getInstance().getCompletedtaskonmobile());
 
 						alldata.add(sd);
 
-
+	               System.out.println(sd.toString());
 					} catch (Exception e) {
 						SimLogger.printLine("The simulation has been terminated due to an unexpected error");
 						e.printStackTrace();
@@ -188,9 +191,10 @@ public class MainAppEntrust {
 		now = df.format(SimulationEndDate);
 		SimLogger.printLine("Simulation finished at " + now +  ". It took " + SimUtils.getTimeDifference(SimulationStartDate,SimulationEndDate));
 		//avgServiceTimePlot.generateServiceTimeChart((LinkedList<ServiceTimeDiagram>) alldata);
-		//failedTask.createHistogramFailedTask((HashMap<String, Double>) map4plot, SS.getNetStability());
+		failedTask.createHistogramFailedTask((HashMap<String, Double>) map4plot, SS.getNetStability());
 		//spentEnergy.generateEnergyForApp((LinkedList<ServiceTimeDiagram>) alldata);
-        spentEnergy.generateEnergyConsumptionDiagram(alldata);
+        //spentEnergy.generateEnergyConsumptionDiagram(alldata);
+	//	spentEnergy.generateCompletedTaskPlot(alldata);
 
 	}
 }

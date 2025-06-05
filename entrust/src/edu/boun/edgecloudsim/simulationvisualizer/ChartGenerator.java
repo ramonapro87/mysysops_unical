@@ -13,29 +13,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 import edu.boun.edgecloudsim.utils.Coordinates;
 import org.jfree.chart.*;
-import org.jfree.chart.block.BlockBorder;
+
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
+
 import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.chart.title.LegendTitle;
+
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.HorizontalAlignment;
-import org.jfree.ui.RectangleAnchor;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleInsets;
+
 
 import java.io.File;
-import java.io.IOException;
+
 import javax.imageio.ImageIO;
-import javax.swing.border.LineBorder;
+
 import java.awt.image.BufferedImage;
-import java.util.*;
-import java.util.List;
-import java.util.stream.Collectors;
+
 
 public class ChartGenerator implements IDiagrams {
     // Cartella di destinazione per il salvataggio dei grafici
@@ -406,8 +400,62 @@ public class ChartGenerator implements IDiagrams {
         }
     }
 
+    @Override
+    public void generateCompletedTaskPlot(List<ServiceTimeDiagram> alldata) {
 
-}
+        try {
+            // Crea un dataset per l'istogramma
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+            // Aggiungi i dati per ogni tipo di task
+            for (ServiceTimeDiagram diagram : alldata) {
+                String scenario = diagram.getScenarioName();
+
+                // Aggiungi i valori per Edge, Mobile e Cloud
+                dataset.addValue(diagram.getNumtaskonedge(), "Completed Tasks", "Edge");
+                dataset.addValue(diagram.getNumtaskonMobile(), "Completed Tasks", "Mobile");
+                dataset.addValue(diagram.getNumtaskoncloud(), "Completed Tasks", "Cloud");
+            }
+
+            // Crea l'istogramma
+            JFreeChart chart = ChartFactory.createBarChart(
+                    "Completed Tasks - " + alldata.get(0).getScenarioName(), // Titolo
+                    "Task Type", // Asse X
+                    "Number of Completed Tasks", // Asse Y
+                    dataset, // Dati
+                    org.jfree.chart.plot.PlotOrientation.VERTICAL, // Orientamento verticale
+                    true, // Legenda
+                    true, // Tooltip
+                    false // URL
+            );
+
+            // Personalizza l'aspetto del grafico
+            chart.setBackgroundPaint(Color.white);
+            chart.getCategoryPlot().setRangeGridlinePaint(Color.BLACK);
+            chart.getCategoryPlot().setDomainGridlinePaint(Color.BLACK);
+
+            // Mostra il grafico in una finestra
+            SwingUtilities.invokeLater(() -> {
+                JFrame frame = new JFrame("Completed Tasks Plot");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.getContentPane().add(new ChartPanel(chart));
+                frame.pack();
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+            });
+            saveChartAsImage(chart, folder, 800,600);
+
+        } catch (Exception e) {
+            System.out.println("Errore nella generazione del grafico:");
+            e.printStackTrace();
+        }
+
+    }
+
+    }
+
+
+
 
 
 
